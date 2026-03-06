@@ -1353,129 +1353,7 @@
                   우측 상단 <strong>복사 버튼</strong>을 누르면 쉽게 복사됩니다.
                 </div>
                 <div class="code-block" id="gas-code-block">
-<button class="btn-copy-code" onclick="copyGasCode()">📋 복사</button>// =============================================
-// 교직원 연수 서명 도우미 - Google Apps Script
-// 이 코드를 그대로 붙여넣으세요
-// =============================================
-
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var action = data.action;
-
-    if (action === 'ping') {
-      return okResponse({message: '연결 성공!'});
-    }
-
-    if (action === 'saveSignatures') {
-      return saveSignatures(ss, data);
-    }
-
-    return okResponse({message: 'unknown action'});
-
-  } catch(err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({success:false, error: err.message}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doGet(e) {
-  return okResponse({message: '서명 도우미 연결 OK'});
-}
-
-function saveSignatures(ss, data) {
-  var trainingName = data.trainingName || '연수';
-  var date = data.date || '';
-  var location = data.location || '';
-  var signatures = data.signatures || [];
-
-  // 시트 이름 = 연수명 (너무 길면 자름)
-  var sheetName = (date + '_' + trainingName).substring(0, 40);
-  var sheet = ss.getSheetByName(sheetName);
-
-  if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
-    // 헤더 작성
-    sheet.getRange(1,1,1,7).setValues([['번호','소속','직위','성명','서명이미지URL','서명방식','시각']]);
-    sheet.getRange(1,1,1,7).setFontWeight('bold');
-    sheet.setFrozenRows(1);
-
-    // 상단 정보
-    sheet.getRange(1,9).setValue('연수명');
-    sheet.getRange(1,10).setValue(trainingName);
-    sheet.getRange(2,9).setValue('날짜');
-    sheet.getRange(2,10).setValue(date);
-    sheet.getRange(3,9).setValue('장소');
-    sheet.getRange(3,10).setValue(location);
-  }
-
-  // 기존 데이터 지우고 다시 쓰기 (2행부터)
-  var lastRow = sheet.getLastRow();
-  if (lastRow > 1) {
-    sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
-  }
-
-  if (signatures.length === 0) {
-    return okResponse({message: '서명 없음', sheetName: sheetName});
-  }
-
-  var rows = signatures.map(function(sig, i) {
-    // 이미지는 드라이브에 저장 후 URL 기록
-    var imgUrl = '';
-    try {
-      if (sig.signatureImg && sig.signatureImg.startsWith('data:image')) {
-        imgUrl = saveImageToDrive(sig.signatureImg, sheetName + '_' + (i+1) + '_' + sig.name);
-      }
-    } catch(imgErr) {
-      imgUrl = '이미지저장실패';
-    }
-    return [
-      i + 1,
-      sig.dept || '',
-      sig.position || '',
-      sig.name || '',
-      imgUrl,
-      sig.signMode || '직접서명',
-      sig.time || ''
-    ];
-  });
-
-  sheet.getRange(2, 1, rows.length, 7).setValues(rows);
-
-  return okResponse({
-    success: true,
-    message: signatures.length + '명 저장 완료',
-    sheetName: sheetName
-  });
-}
-
-function saveImageToDrive(dataUrl, filename) {
-  // 구글 드라이브에 "연수서명이미지" 폴더 자동 생성 후 이미지 저장
-  var folders = DriveApp.getFoldersByName('연수서명이미지');
-  var folder;
-  if (folders.hasNext()) {
-    folder = folders.next();
-  } else {
-    folder = DriveApp.createFolder('연수서명이미지');
-  }
-
-  var parts = dataUrl.split(',');
-  var mimeType = parts[0].match(/:(.*?);/)[1];
-  var decoded = Utilities.base64Decode(parts[1]);
-  var blob = Utilities.newBlob(decoded, mimeType, filename + '.png');
-  var file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return file.getUrl();
-}
-
-function okResponse(obj) {
-  obj.success = obj.success !== false ? true : false;
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}</div>
+<button class="btn-copy-code" onclick="copyGasCode()">📋 복사</button><span id="gas-code-display"></span></div>
               </div>
             </div>
 
@@ -2412,19 +2290,118 @@ async function syncSingleToSheets(trainingId) {
   }
 }
 
-// ===== COPY GAS CODE =====
+// ===== GAS CODE (stored as JS string to avoid browser parse errors) =====
+const GAS_CODE = `// =============================================
+// 교직원 연수 서명 도우미 - Google Apps Script
+// 이 코드를 그대로 붙여넣으세요
+// =============================================
+
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var action = data.action;
+
+    if (action === 'ping') {
+      return okResponse({message: '연결 성공!'});
+    }
+    if (action === 'saveSignatures') {
+      return saveSignatures(ss, data);
+    }
+    return okResponse({message: 'unknown action'});
+
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({success:false, error: err.message}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return okResponse({message: '서명 도우미 연결 OK'});
+}
+
+function saveSignatures(ss, data) {
+  var trainingName = data.trainingName || '연수';
+  var date = data.date || '';
+  var location = data.location || '';
+  var signatures = data.signatures || [];
+
+  var sheetName = (date + '_' + trainingName).substring(0, 40);
+  var sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    sheet.getRange(1,1,1,7).setValues([['번호','소속','직위','성명','서명이미지URL','서명방식','시각']]);
+    sheet.getRange(1,1,1,7).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    sheet.getRange(1,9).setValue('연수명');
+    sheet.getRange(1,10).setValue(trainingName);
+    sheet.getRange(2,9).setValue('날짜');
+    sheet.getRange(2,10).setValue(date);
+    sheet.getRange(3,9).setValue('장소');
+    sheet.getRange(3,10).setValue(location);
+  }
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
+  }
+
+  if (signatures.length === 0) {
+    return okResponse({message: '서명 없음', sheetName: sheetName});
+  }
+
+  var rows = signatures.map(function(sig, i) {
+    var imgUrl = '';
+    try {
+      if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0) {
+        imgUrl = saveImageToDrive(sig.signatureImg, sheetName + '_' + (i+1) + '_' + sig.name);
+      }
+    } catch(imgErr) {
+      imgUrl = '이미지저장실패';
+    }
+    return [i+1, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'직접서명', sig.time||''];
+  });
+
+  sheet.getRange(2, 1, rows.length, 7).setValues(rows);
+
+  return okResponse({success: true, message: signatures.length + '명 저장 완료', sheetName: sheetName});
+}
+
+function saveImageToDrive(dataUrl, filename) {
+  var folders = DriveApp.getFoldersByName('연수서명이미지');
+  var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder('연수서명이미지');
+  var parts = dataUrl.split(',');
+  var mimeType = parts[0].match(/:(.*?);/)[1];
+  var decoded = Utilities.base64Decode(parts[1]);
+  var blob = Utilities.newBlob(decoded, mimeType, filename + '.png');
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return file.getUrl();
+}
+
+function okResponse(obj) {
+  obj.success = obj.success !== false;
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+// Render GAS code safely into the display span
+document.addEventListener('DOMContentLoaded', function() {
+  const el = document.getElementById('gas-code-display');
+  if (el) el.textContent = GAS_CODE;
+});
+
 function copyGasCode() {
-  const block = document.getElementById('gas-code-block');
-  const btn = block.querySelector('.btn-copy-code');
-  // Get text without the button text
-  const text = block.innerText.replace('📋 복사', '').trim();
-  navigator.clipboard.writeText(text).then(() => {
+  const btn = document.querySelector('#gas-code-block .btn-copy-code');
+  navigator.clipboard.writeText(GAS_CODE).then(() => {
     btn.textContent = '✅ 복사됨!';
     setTimeout(() => btn.textContent = '📋 복사', 2000);
   }).catch(() => {
-    // fallback
     const ta = document.createElement('textarea');
-    ta.value = text;
+    ta.value = GAS_CODE;
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
@@ -2434,7 +2411,7 @@ function copyGasCode() {
   });
 }
 
-
+function escHtml(s) {
   return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
