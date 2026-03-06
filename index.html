@@ -970,6 +970,58 @@
     border-radius: 4px;
   }
 
+  /* Result type selector buttons */
+  .result-type-btn {
+    padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--gray-200);
+    background: white; font-size: 13px; font-weight: 600; font-family: inherit;
+    cursor: pointer; color: var(--gray-500); transition: all 0.2s;
+  }
+  .result-type-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+  /* ===== PRINT / PDF REGISTER FORM ===== */
+  @media print {
+    body > * { display: none !important; }
+    #pdf-print-area { display: block !important; }
+  }
+
+  #pdf-print-area { display: none; }
+
+  .reg-form-wrap { font-family: 'Noto Sans KR', sans-serif; background: white; }
+
+  .reg-form-title {
+    text-align: center; font-size: 22px; font-weight: 900;
+    margin-bottom: 4px; letter-spacing: 3px;
+  }
+
+  .reg-form-meta { text-align: center; font-size: 12px; color: #555; margin-bottom: 16px; }
+
+  .reg-form-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+  .reg-form-table th, .reg-form-table td {
+    border: 1px solid #444; padding: 0; text-align: center; vertical-align: middle;
+  }
+
+  .reg-form-table th {
+    background: #EEF4FF; font-weight: 700; padding: 7px 4px; font-size: 12px;
+  }
+
+  .reg-form-table td { height: 54px; }
+
+  .reg-form-table .td-num { width: 32px; font-size: 11px; color: #999; }
+  .reg-form-table .td-dept { width: 88px; }
+  .reg-form-table .td-pos { width: 78px; }
+  .reg-form-table .td-name { width: 78px; font-weight: 700; }
+  .reg-form-table .td-sig { min-width: 160px; }
+
+  .sig-cell-img { max-width: 140px; max-height: 46px; object-fit: contain; display: block; margin: auto; }
+
+  .reg-section-row td {
+    background: #E8F5ED; font-weight: 800; font-size: 12px;
+    padding: 5px 12px; text-align: left; color: #2E7D48; letter-spacing: 1px;
+  }
+
+  .reg-form-footer { margin-top: 12px; font-size: 10px; color: #bbb; text-align: right; }
+
   /* ===== GOOGLE SHEETS SETUP ===== */
   .gas-setup-card {
     background: white;
@@ -1576,15 +1628,26 @@ function okResponse(obj) {
 
 <!-- ===== RESULT MODAL ===== -->
 <div id="modal-result" class="modal-overlay">
-  <div class="modal" style="max-width:700px;">
+  <div class="modal" style="max-width:760px; max-height:90vh; overflow-y:auto;">
     <div class="modal-title" id="result-modal-title">서명 결과</div>
+
+    <!-- 출력 유형 선택 -->
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="result-type-btn active" id="rtype-all" onclick="setResultType('all')">📋 전체 (교직원용)</button>
+      <button class="result-type-btn" id="rtype-teacher" onclick="setResultType('teacher')">🎓 교원용 (교장·교감·교사)</button>
+    </div>
+
     <div id="result-modal-content"></div>
-    <div class="modal-btns" style="margin-top:16px;">
+
+    <div class="modal-btns" style="margin-top:16px;flex-wrap:wrap;gap:8px;">
       <button class="btn-sm-secondary" onclick="closeModal('modal-result')">닫기</button>
-      <button class="btn-sm-primary" onclick="printResult()">🖨️ 인쇄</button>
+      <button class="btn-sm-primary" style="background:#22A06B;" onclick="downloadPDF()">⬇ PDF 다운로드</button>
     </div>
   </div>
 </div>
+
+<!-- Hidden PDF print area -->
+<div id="pdf-print-area"></div>
 
 <!-- Toast -->
 <div id="toast" class="toast"></div>
@@ -1813,38 +1876,173 @@ function shareLink(id) {
   toast('링크가 클립보드에 복사되었습니다! (데모)');
 }
 
+// ===== POSITION ORDER & CLASSIFICATION =====
+const POSITION_ORDER = [
+  '교장','교감','행정실장','교사',
+  '주무관','영양사','조리사','강사'
+];
+
+// 교원 해당 직위
+const TEACHER_POSITIONS = new Set(['교장','교감','교사']);
+
+function getPositionIndex(pos) {
+  const p = (pos || '').trim();
+  const idx = POSITION_ORDER.indexOf(p);
+  return idx >= 0 ? idx : 999;
+}
+
+function sortSignatures(sigs) {
+  return [...sigs].sort((a, b) => {
+    const ia = getPositionIndex(a.position);
+    const ib = getPositionIndex(b.position);
+    if (ia !== ib) return ia - ib;
+    return (a.name || '').localeCompare(b.name || '', 'ko');
+  });
+}
+
+// Current result state
+let _currentResultId = null;
+let _currentResultType = 'all'; // 'all' | 'teacher'
+
+function setResultType(type) {
+  _currentResultType = type;
+  document.getElementById('rtype-all').classList.toggle('active', type === 'all');
+  document.getElementById('rtype-teacher').classList.toggle('active', type === 'teacher');
+  if (_currentResultId) renderResultContent(_currentResultId, type);
+}
+
 function showResult(id) {
+  _currentResultId = id;
+  _currentResultType = 'all';
+  document.getElementById('rtype-all').classList.add('active');
+  document.getElementById('rtype-teacher').classList.remove('active');
+
   const t = state.trainings.find(x => x.id === id);
   if (!t) return;
-  document.getElementById('result-modal-title').textContent = `📋 ${t.name} - 서명 결과 (${t.signatures.length}명)`;
-
-  let html = '';
-  if (t.signatures.length === 0) {
-    html = '<div style="text-align:center;padding:24px;color:#94A3B8;">아직 서명한 교직원이 없습니다.</div>';
-  } else {
-    html = `<table class="result-table">
-      <thead><tr><th>#</th><th>소속</th><th>직위</th><th>성명</th><th>서명</th><th>시각</th></tr></thead>
-      <tbody>
-        ${t.signatures.map((s, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${escHtml(s.dept)}</td>
-            <td>${escHtml(s.position)}</td>
-            <td>${escHtml(s.name)}</td>
-            <td>${s.signatureImg ? `<img class="sig-preview" src="${s.signatureImg}">` : '-'}</td>
-            <td>${s.time}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>`;
-  }
-
-  document.getElementById('result-modal-content').innerHTML = html;
+  document.getElementById('result-modal-title').textContent =
+    `「${t.name}」 연수 등록부`;
+  renderResultContent(id, 'all');
   openModal('modal-result');
 }
 
+function renderResultContent(id, type) {
+  const t = state.trainings.find(x => x.id === id);
+  if (!t) return;
+
+  const container = document.getElementById('result-modal-content');
+
+  if (t.signatures.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:#94A3B8;font-size:14px;">아직 서명한 교직원이 없습니다.</div>';
+    return;
+  }
+
+  const sorted = sortSignatures(t.signatures);
+  let filtered;
+
+  if (type === 'teacher') {
+    filtered = sorted.filter(s => TEACHER_POSITIONS.has((s.position||'').trim()));
+  } else {
+    filtered = sorted;
+  }
+
+  const label = type === 'teacher' ? '교원' : '교직원';
+
+  container.innerHTML = buildRegisterFormHTML(t, filtered, label, false);
+}
+
+function buildRegisterFormHTML(t, sigs, label, forPrint) {
+  const dateStr = t.date || '';
+  const timeStr = t.time ? ` | ${t.time}` : '';
+  const locationStr = t.location ? ` | 장소: ${t.location}` : '';
+  const now = new Date().toLocaleDateString('ko-KR');
+
+  // Split into groups: 교원(교장,교감,교사) and 기타
+  const teacherSigs = sigs.filter(s => TEACHER_POSITIONS.has((s.position||'').trim()));
+  const otherSigs   = sigs.filter(s => !TEACHER_POSITIONS.has((s.position||'').trim()));
+
+  function buildRows(list, startNum) {
+    return list.map((s, i) => `
+      <tr>
+        <td class="td-num">${startNum + i}</td>
+        <td class="td-dept">${escHtml(s.dept)}</td>
+        <td class="td-pos">${escHtml(s.position)}</td>
+        <td class="td-name">${escHtml(s.name)}</td>
+        <td class="td-sig">${s.signatureImg
+          ? `<img class="sig-cell-img" src="${s.signatureImg}" alt="서명">`
+          : ''}</td>
+      </tr>`).join('');
+  }
+
+  let tableBody = '';
+  let num = 1;
+
+  if (label === '교원') {
+    // 교원 전용 — 교원만 출력
+    tableBody = buildRows(sigs, 1);
+  } else {
+    // 교직원 전체 — 교원 / 기타 섹션 분리
+    if (teacherSigs.length > 0) {
+      tableBody += `<tr class="reg-section-row"><td colspan="5">▶ 교원 (${teacherSigs.length}명)</td></tr>`;
+      tableBody += buildRows(teacherSigs, num);
+      num += teacherSigs.length;
+    }
+    if (otherSigs.length > 0) {
+      tableBody += `<tr class="reg-section-row"><td colspan="5">▶ 교직원 (${otherSigs.length}명)</td></tr>`;
+      tableBody += buildRows(otherSigs, num);
+    }
+  }
+
+  return `
+  <div class="reg-form-wrap" ${forPrint ? 'style="padding:10mm 12mm;"' : ''}>
+    <div class="reg-form-title">「${escHtml(t.name)}」 연수 등록부</div>
+    <div class="reg-form-meta">
+      일시: ${dateStr}${timeStr}${locationStr} &nbsp;|&nbsp; 출력: ${label}용 (${sigs.length}명)
+    </div>
+    <table class="reg-form-table">
+      <thead>
+        <tr>
+          <th class="td-num">번호</th>
+          <th class="td-dept">소속</th>
+          <th class="td-pos">직위</th>
+          <th class="td-name">성명</th>
+          <th class="td-sig">서&nbsp;&nbsp;&nbsp;명</th>
+        </tr>
+      </thead>
+      <tbody>${tableBody}</tbody>
+    </table>
+    ${forPrint ? `<div class="reg-form-footer">출력일: ${now}</div>` : ''}
+  </div>`;
+}
+
+function downloadPDF() {
+  const t = state.trainings.find(x => x.id === _currentResultId);
+  if (!t) return;
+
+  const sorted = sortSignatures(t.signatures);
+  let filtered, label;
+  if (_currentResultType === 'teacher') {
+    filtered = sorted.filter(s => TEACHER_POSITIONS.has((s.position||'').trim()));
+    label = '교원';
+  } else {
+    filtered = sorted;
+    label = '교직원';
+  }
+
+  // Build full page HTML for print
+  const formHTML = buildRegisterFormHTML(t, filtered, label, true);
+  const printArea = document.getElementById('pdf-print-area');
+  printArea.innerHTML = formHTML;
+
+  // Use browser print dialog → Save as PDF
+  setTimeout(() => {
+    window.print();
+    // restore after print
+    setTimeout(() => { printArea.innerHTML = ''; }, 1000);
+  }, 150);
+}
+
 function printResult() {
-  window.print();
+  downloadPDF();
 }
 
 // ===== USER FLOW =====
