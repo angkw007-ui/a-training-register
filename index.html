@@ -273,7 +273,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#E8F5ED;min-height:100vh;c
       <div class="form-row"><input type="date" class="form-input" id="f-date"><input type="text" class="form-input" id="f-time" placeholder="시간 (예: 15:00~17:00)"></div>
       <label class="checkbox-row"><input type="checkbox" id="f-pw-chk" onchange="document.getElementById('pw-wrap').style.display=this.checked?'block':'none'">인증 비밀번호 설정</label>
       <div id="pw-wrap" style="display:none;margin-bottom:12px"><input type="text" class="form-input" id="f-pw" placeholder="비밀번호"></div>
-      <button class="btn-register" onclick="createEvent()">행사 등록</button>
+      <button class="btn-register" onclick="createNewEvent()">행사 등록</button>
     </div>
     <div><div class="list-header"><div class="list-title">등록된 행사 목록</div><button class="btn-refresh" onclick="renderList()">🔄 새로고침</button></div><div id="ev-list"><div class="empty-list">등록된 행사가 없습니다.</div></div></div>
   </div>
@@ -365,7 +365,7 @@ async function gasPostTo(url,data){
 // ===== EVENT CRUD =====
 function evSheetName(ev){return('s_'+ev.id).substring(0,30)}
 
-async function createEvent(){
+async function createNewEvent(){
   const name=$('f-name').value.trim(),loc=$('f-loc').value.trim(),date=$('f-date').value,time=$('f-time').value.trim();
   const cat=curCat==='기타'?($('custom-cat').value.trim()||'기타'):curCat;
   const pw=$('f-pw-chk').checked?$('f-pw').value.trim():null;
