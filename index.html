@@ -823,7 +823,7 @@
 
   /* Upload mode */
   .sig-upload-wrap {
-    display: none;
+    display: flex;
     border: 2px dashed var(--gray-300);
     border-radius: 12px;
     background: white;
@@ -2323,6 +2323,13 @@ function setSigMode(mode) {
   document.getElementById('sig-draw-area').style.display = mode === 'draw' ? 'block' : 'none';
   document.getElementById('sig-upload-area').style.display = mode === 'upload' ? 'block' : 'none';
   if (mode === 'draw') initCanvas();
+  // 업로드 모드 전환 시 파일 선택창 바로 열기
+  if (mode === 'upload') {
+    setTimeout(() => {
+      const input = document.getElementById('sig-upload-input');
+      if (input) input.click();
+    }, 100);
+  }
 }
 
 // ===== UPLOAD HANDLERS =====
