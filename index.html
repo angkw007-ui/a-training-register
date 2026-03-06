@@ -1487,13 +1487,70 @@
               <div class="setup-step-content">
                 <div class="setup-step-title">저장하고 배포하기</div>
                 <div class="setup-step-desc">
-                  ① 상단의 💾 <strong>저장(Ctrl+S)</strong>을 누르세요.<br>
-                  ② 오른쪽 상단 <strong>배포 → 새 배포</strong>를 클릭하세요.<br>
-                  ③ ⚙️ 아이콘 → <strong>"웹 앱"</strong> 선택<br>
-                  ④ <strong>실행 계정</strong>: 나(본인 계정)<br>
-                  ⑤ <strong>액세스 권한</strong>: <span style="color:#E84444;font-weight:700;">모든 사용자</span> 선택<br>
-                  ⑥ <strong>배포</strong> 버튼 클릭 → 권한 허용 → <strong>웹앱 URL 복사</strong>
+                  ① 상단의 💾 <strong>저장 버튼(또는 Ctrl+S)</strong>을 누르세요.<br>
+                  ② 오른쪽 상단 파란 버튼 <strong>배포 → 새 배포</strong>를 클릭하세요.<br>
+                  ③ 왼쪽 ⚙️ 아이콘 클릭 → <strong>"웹 앱"</strong> 선택<br>
+                  ④ <strong>설명</strong>: 아무거나 입력 (예: 연수서명)<br>
+                  ⑤ <strong>다음 사용자로 실행</strong>: <span style="color:var(--blue);font-weight:700;">나(본인 이메일 계정)</span> 선택<br>
+                  ⑥ <strong>액세스 권한이 있는 사용자</strong>: <span style="color:#E84444;font-weight:700;">모든 사용자</span> 선택<br>
+                  ⑦ <strong>배포</strong> 버튼 클릭
                 </div>
+
+                <!-- 권한 승인 안내 박스 -->
+                <div style="background:#FFF3E0;border:1.5px solid #FFB74D;border-radius:12px;padding:16px 18px;margin-top:4px;">
+                  <div style="font-size:13px;font-weight:800;color:#E65100;margin-bottom:10px;">⚠️ "액세스 승인" 창이 뜨면 — 겁내지 마세요! 정상입니다.</div>
+
+                  <div style="display:flex;flex-direction:column;gap:10px;">
+
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                      <div style="min-width:22px;height:22px;background:#E65100;color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;">A</div>
+                      <div style="font-size:12.5px;color:#4E342E;line-height:1.6;">
+                        <strong>"액세스 승인" 버튼</strong>이 뜨면 클릭하세요.
+                      </div>
+                    </div>
+
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                      <div style="min-width:22px;height:22px;background:#E65100;color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;">B</div>
+                      <div style="font-size:12.5px;color:#4E342E;line-height:1.6;">
+                        구글 계정 선택 창이 뜨면 <strong>본인 구글 계정을 클릭</strong>하세요.
+                      </div>
+                    </div>
+
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                      <div style="min-width:22px;height:22px;background:#E65100;color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;">C</div>
+                      <div style="font-size:12.5px;color:#4E342E;line-height:1.6;">
+                        <strong>"Google이 확인하지 않은 앱"</strong> 경고 화면이 나와도 당황하지 마세요.<br>
+                        이건 직접 만든 앱이라 구글 심사를 받지 않았기 때문에 뜨는 화면입니다.<br>
+                        왼쪽 아래 <span style="color:#1A73E8;font-weight:700;">"고급"</span> 글자를 클릭하세요.
+                      </div>
+                    </div>
+
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                      <div style="min-width:22px;height:22px;background:#E65100;color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;">D</div>
+                      <div style="font-size:12.5px;color:#4E342E;line-height:1.6;">
+                        <strong>"(내 앱 이름)(으)로 이동(안전하지 않음)"</strong> 링크를 클릭하세요.<br>
+                        <span style="color:#999;font-size:11.5px;">※ 본인이 직접 만든 스크립트이므로 안전합니다.</span>
+                      </div>
+                    </div>
+
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                      <div style="min-width:22px;height:22px;background:#E65100;color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;">E</div>
+                      <div style="font-size:12.5px;color:#4E342E;line-height:1.6;">
+                        권한 목록이 나오면 맨 아래 <strong>"허용"</strong> 버튼을 클릭하세요.
+                      </div>
+                    </div>
+
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                      <div style="min-width:22px;height:22px;background:#22A06B;color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;">F</div>
+                      <div style="font-size:12.5px;color:#1B5E20;line-height:1.6;">
+                        배포 완료! <strong>웹 앱 URL</strong>이 화면에 나타납니다.<br>
+                        오른쪽 📋 <strong>복사 버튼</strong>을 눌러 URL을 복사하세요.
+                      </div>
+                    </div>
+
+                  </div>
+                </div><!-- /권한 승인 박스 -->
+
               </div>
             </div>
 
