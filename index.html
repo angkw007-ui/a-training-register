@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+html_code = r'''<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -698,6 +699,16 @@
     margin-bottom: 24px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--gray-100);
+  }
+
+  /* ★ 연수 상세 정보 표시 영역 */
+  .sign-form-training-detail {
+    font-size: 13px;
+    color: var(--gray-500);
+    text-align: center;
+    margin-top: -16px;
+    margin-bottom: 20px;
+    line-height: 1.6;
   }
 
   .sign-form-input {
@@ -1623,6 +1634,7 @@
 <div id="screen-sign-form" class="screen">
   <div class="sign-form-card">
     <div class="sign-form-training-name" id="sign-form-training-name"></div>
+    <div class="sign-form-training-detail" id="sign-form-training-detail"></div>
     <input type="text" class="sign-form-input" id="sign-dept" placeholder="소속 입력">
     <input type="text" class="sign-form-input" id="sign-position" placeholder="직위 입력">
     <input type="text" class="sign-form-input" id="sign-name" placeholder="성명 입력">
@@ -1799,6 +1811,10 @@ function showScreen(id) {
 }
 
 function goMain() {
+  // URL에서 쿼리 파라미터 제거 (뒤로가기 시 깔끔하게)
+  if (window.location.search) {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
   showScreen('screen-main');
   closeModal('modal-admin-login');
 }
@@ -1973,6 +1989,67 @@ function deleteTraining(id) {
   }
 }
 
+// =======================================================
+// ★★★ 핵심 수정: URL에 연수 정보를 인코딩하는 함수들 ★★★
+// =======================================================
+
+/**
+ * 연수 정보를 URL-safe Base64로 인코딩
+ */
+function encodeTrainingForUrl(t) {
+  const data = {
+    id: t.id,
+    n: t.name,       // name
+    l: t.location,   // location
+    d: t.date,       // date
+    tm: t.time,      // time
+    tp: t.type,      // type (school/external)
+    pw: t.password   // password (if any)
+  };
+  const json = JSON.stringify(data);
+  // UTF-8 → Base64 (URL-safe)
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  // URL-safe Base64: + → -, / → _, = 제거
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * URL-safe Base64에서 연수 정보 디코딩
+ */
+function decodeTrainingFromUrl(encoded) {
+  try {
+    // URL-safe Base64 복원
+    let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    // padding 복원
+    while (b64.length % 4) b64 += '=';
+    const json = decodeURIComponent(escape(atob(b64)));
+    const data = JSON.parse(json);
+    return {
+      id: data.id || Date.now().toString(),
+      name: data.n || '(알 수 없는 연수)',
+      location: data.l || '',
+      date: data.d || '',
+      time: data.tm || '',
+      type: data.tp || 'school',
+      password: data.pw || null,
+      signatures: []   // 새 기기에서는 서명 목록 없음
+    };
+  } catch(e) {
+    console.error('연수 정보 디코딩 실패:', e);
+    return null;
+  }
+}
+
+/**
+ * 공유 URL 생성 (연수 정보가 URL에 내장됨)
+ */
+function buildShareUrl(t) {
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  const encoded = encodeTrainingForUrl(t);
+  return baseUrl + '?d=' + encoded;
+}
+
+
 // ===== QR & SHARE LINK =====
 let _qrTrainingId = null;
 let _qrSmall = null;
@@ -1983,9 +2060,8 @@ function shareLink(id) {
   if (!t) return;
   _qrTrainingId = id;
 
-  // Build URL with training ID as query param → 링크로 접속 시 해당 연수 자동 선택
-  const baseUrl = window.location.href.split('?')[0].split('#')[0];
-  const shareUrl = baseUrl + '?t=' + id;
+  // ★ 변경: 연수 정보를 URL에 인코딩
+  const shareUrl = buildShareUrl(t);
 
   document.getElementById('qr-modal-title').textContent = `🔗 「${t.name}」 링크 & QR`;
   document.getElementById('qr-share-url').textContent = shareUrl;
@@ -1996,17 +2072,17 @@ function shareLink(id) {
   smallWrap.innerHTML = '';
   largeWrap.innerHTML = '';
 
-  // Generate small QR
+  // Generate QR
   try {
     _qrSmall = new QRCode(smallWrap, {
       text: shareUrl, width: 180, height: 180,
       colorDark: '#0F172A', colorLight: '#FFFFFF',
-      correctLevel: QRCode.CorrectLevel.H
+      correctLevel: QRCode.CorrectLevel.M  // URL이 길어지므로 M 레벨
     });
     _qrLarge = new QRCode(largeWrap, {
       text: shareUrl, width: 260, height: 260,
       colorDark: '#0F172A', colorLight: '#FFFFFF',
-      correctLevel: QRCode.CorrectLevel.H
+      correctLevel: QRCode.CorrectLevel.M
     });
   } catch(e) {
     smallWrap.innerHTML = '<div style="padding:20px;color:#E84444;font-size:13px;">QR 생성 실패. 라이브러리 로드를 확인해주세요.</div>';
@@ -2066,7 +2142,6 @@ function printQrPoster() {
 
   printArea.classList.add('printing');
 
-  // Override print CSS temporarily
   const style = document.createElement('style');
   style.id = 'qr-print-override';
   style.textContent = `
@@ -2094,7 +2169,6 @@ const POSITION_ORDER = [
   '주무관','영양사','조리사','강사'
 ];
 
-// 교원 해당 직위
 const TEACHER_POSITIONS = new Set(['교장','교감','교사']);
 
 function getPositionIndex(pos) {
@@ -2114,7 +2188,7 @@ function sortSignatures(sigs) {
 
 // Current result state
 let _currentResultId = null;
-let _currentResultType = 'all'; // 'all' | 'teacher'
+let _currentResultType = 'all';
 
 function setResultType(type) {
   _currentResultType = type;
@@ -2158,7 +2232,6 @@ function renderResultContent(id, type) {
   }
 
   const label = type === 'teacher' ? '교원' : '교직원';
-
   container.innerHTML = buildRegisterFormHTML(t, filtered, label, false);
 }
 
@@ -2167,10 +2240,6 @@ function buildRegisterFormHTML(t, sigs, label, forPrint) {
   const timeStr = t.time ? ` | ${t.time}` : '';
   const locationStr = t.location ? ` | 장소: ${t.location}` : '';
   const now = new Date().toLocaleDateString('ko-KR');
-
-  // Split into groups
-  const teacherSigs = sigs.filter(s => TEACHER_POSITIONS.has((s.position||'').trim()));
-  const otherSigs   = sigs.filter(s => !TEACHER_POSITIONS.has((s.position||'').trim()));
 
   function buildRows(list, startNum) {
     return list.map((s, i) => `
@@ -2186,15 +2255,7 @@ function buildRegisterFormHTML(t, sigs, label, forPrint) {
       </tr>`).join('');
   }
 
-  let tableBody = '';
-  let num = 1;
-
-  if (label === '교원') {
-    tableBody = buildRows(sigs, 1);
-  } else {
-    // 교직원 전체 — 구분선 없이 정렬 순서대로 출력
-    tableBody = buildRows(sigs, 1);
-  }
+  let tableBody = buildRows(sigs, 1);
 
   return `
   <div class="reg-form-wrap" ${forPrint ? 'style="padding:10mm 14mm;"' : ''}>
@@ -2233,15 +2294,12 @@ function downloadPDF() {
     label = '교직원';
   }
 
-  // Build full page HTML for print
   const formHTML = buildRegisterFormHTML(t, filtered, label, true);
   const printArea = document.getElementById('pdf-print-area');
   printArea.innerHTML = formHTML;
 
-  // Use browser print dialog → Save as PDF
   setTimeout(() => {
     window.print();
-    // restore after print
     setTimeout(() => { printArea.innerHTML = ''; }, 1000);
   }, 150);
 }
@@ -2265,13 +2323,6 @@ function showUserFlow() {
     `).join('');
   }
   showScreen('screen-user');
-
-  // URL 쿼리로 특정 연수 자동 선택 (?t=연수ID)
-  const params = new URLSearchParams(window.location.search);
-  const tid = params.get('t');
-  if (tid && state.trainings.find(x => x.id === tid)) {
-    selectTraining(tid);
-  }
 }
 
 function selectTraining(id) {
@@ -2280,7 +2331,13 @@ function selectTraining(id) {
   state.currentTraining = t;
   document.getElementById('sign-form-training-name').textContent = t.name;
 
-  // 학교용이면 명단 기반 자동완성, 소속 고정 안내
+  // 연수 상세 정보 표시
+  let detail = '';
+  if (t.date) detail += '📅 ' + t.date;
+  if (t.time) detail += ' | ⏰ ' + t.time;
+  if (t.location) detail += '<br>📍 ' + escHtml(t.location);
+  document.getElementById('sign-form-training-detail').innerHTML = detail;
+
   const deptInput = document.getElementById('sign-dept');
   const nameInput = document.getElementById('sign-name');
   const posInput  = document.getElementById('sign-position');
@@ -2288,7 +2345,6 @@ function selectTraining(id) {
   posInput.value  = '';
   nameInput.value = '';
 
-  // 학교용: 소속 입력 → 명단에 없는 소속 경고 힌트 제거하고 이름 입력 시 명단 자동완성
   if (t.type === 'school' && state.roster.length > 0) {
     deptInput.placeholder = '소속 입력 (선택)';
     nameInput.placeholder = '성명 입력 (명단 확인 필요)';
@@ -2365,15 +2421,15 @@ function goToSignature() {
 
   if (!name) { toast('성명을 입력해주세요.'); return; }
 
-  // ★ 학교용 + 명단 있음 → 명단 검증
   const t = state.currentTraining;
+
+  // ★ 학교용 + 명단 있음 → 명단 검증 (로컬 명단이 있는 관리자 기기에서만)
   if (t && t.type === 'school' && state.roster.length > 0) {
     const inRoster = state.roster.find(r => r.name === name);
     if (!inRoster) {
       toast(`❌ "${name}"님은 교직원 명단에 없습니다. 성명을 확인해주세요.`);
       return;
     }
-    // 소속이 입력됐는데 명단의 소속과 다를 경우 경고
     if (dept && inRoster.dept && dept !== inRoster.dept) {
       if (!confirm(`소속이 명단과 다릅니다.\n명단: ${inRoster.dept} / 입력: ${dept}\n계속 진행하시겠습니까?`)) return;
     }
@@ -2402,7 +2458,7 @@ function goToSignature() {
 }
 
 // ===== SIGNATURE MODE =====
-let sigMode = 'draw'; // 'draw' | 'upload'
+let sigMode = 'draw';
 let uploadedSigDataUrl = null;
 
 function setSigMode(mode) {
@@ -2412,7 +2468,6 @@ function setSigMode(mode) {
   document.getElementById('sig-draw-area').style.display = mode === 'draw' ? 'block' : 'none';
   document.getElementById('sig-upload-area').style.display = mode === 'upload' ? 'block' : 'none';
   if (mode === 'draw') initCanvas();
-  // 업로드 모드 전환 시 파일 선택창 바로 열기
   if (mode === 'upload') {
     setTimeout(() => {
       const input = document.getElementById('sig-upload-input');
@@ -2540,11 +2595,17 @@ function completeSignature() {
   };
 
   if (state.currentTraining) {
+    // 기존 서명 덮어쓰기
     state.currentTraining.signatures = state.currentTraining.signatures.filter(
       s => !(s.name === signature.name && s.dept === signature.dept)
     );
     state.currentTraining.signatures.push(signature);
     saveState();
+
+    // ★★★ 구글 시트 연동이 되어있으면 자동으로 시트에도 전송 ★★★
+    if (state.gasUrl) {
+      sendSignatureToSheets(state.currentTraining, signature);
+    }
   }
 
   // Reset upload state
@@ -2559,6 +2620,36 @@ function completeSignature() {
   document.getElementById('success-msg').textContent =
     `${state.currentPerson?.name}님의 서명이 등록되었습니다.`;
   showScreen('screen-success');
+}
+
+/**
+ * ★ 개별 서명을 구글 시트에 전송 (비동기, 실패해도 사용자 경험에 영향 없음)
+ */
+async function sendSignatureToSheets(training, signature) {
+  try {
+    const payload = {
+      action: 'addSignature',
+      trainingName: training.name,
+      date: training.date,
+      location: training.location || '',
+      signature: {
+        dept: signature.dept,
+        position: signature.position,
+        name: signature.name,
+        signatureImg: signature.signatureImg,
+        time: signature.time,
+        signMode: sigMode === 'draw' ? '직접서명' : '이미지업로드'
+      }
+    };
+    await fetch(state.gasUrl, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    console.log('✅ 구글 시트에 서명 전송 완료');
+  } catch(err) {
+    console.warn('⚠️ 구글 시트 전송 실패 (로컬 저장은 완료):', err);
+  }
 }
 
 // ===== ADMIN TABS =====
@@ -2614,8 +2705,6 @@ async function testGasConnection() {
   try {
     const res = await fetch(url + '?action=ping', { method: 'GET', mode: 'cors' });
     const text = await res.text();
-    let json;
-    try { json = JSON.parse(text); } catch(e) { json = null; }
 
     if (res.ok) {
       state.gasUrl = url;
@@ -2628,7 +2717,6 @@ async function testGasConnection() {
       throw new Error('응답 오류: ' + res.status);
     }
   } catch(err) {
-    // GAS often returns CORS error on GET — try saving URL anyway if URL looks valid
     if (url.includes('script.google.com')) {
       state.gasUrl = url;
       saveState();
@@ -2663,9 +2751,8 @@ async function syncAllToSheets() {
         location: t.location || '',
         signatures: t.signatures.map(s => ({...s, signMode: s.signMode || '직접서명'}))
       };
-      const res = await fetch(state.gasUrl, {
-        method: 'POST',
-        mode: 'no-cors',
+      await fetch(state.gasUrl, {
+        method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload)
       });
@@ -2713,7 +2800,7 @@ async function syncSingleToSheets(trainingId) {
   }
 }
 
-// ===== GAS CODE (stored as JS string to avoid browser parse errors) =====
+// ===== GAS CODE =====
 const GAS_CODE = `// =============================================
 // 교직원 연수 서명 도우미 - Google Apps Script
 // 이 코드를 그대로 붙여넣으세요
@@ -2731,6 +2818,9 @@ function doPost(e) {
     if (action === 'saveSignatures') {
       return saveSignatures(ss, data);
     }
+    if (action === 'addSignature') {
+      return addSingleSignature(ss, data);
+    }
     return okResponse({message: 'unknown action'});
 
   } catch(err) {
@@ -2744,15 +2834,9 @@ function doGet(e) {
   return okResponse({message: '서명 도우미 연결 OK'});
 }
 
-function saveSignatures(ss, data) {
-  var trainingName = data.trainingName || '연수';
-  var date = data.date || '';
-  var location = data.location || '';
-  var signatures = data.signatures || [];
-
+function getOrCreateSheet(ss, trainingName, date, location) {
   var sheetName = (date + '_' + trainingName).substring(0, 40);
   var sheet = ss.getSheetByName(sheetName);
-
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
     sheet.getRange(1,1,1,7).setValues([['번호','소속','직위','성명','서명이미지URL','서명방식','시각']]);
@@ -2765,6 +2849,42 @@ function saveSignatures(ss, data) {
     sheet.getRange(3,9).setValue('장소');
     sheet.getRange(3,10).setValue(location);
   }
+  return { sheet: sheet, sheetName: sheetName };
+}
+
+function addSingleSignature(ss, data) {
+  var trainingName = data.trainingName || '연수';
+  var date = data.date || '';
+  var location = data.location || '';
+  var sig = data.signature;
+
+  var result = getOrCreateSheet(ss, trainingName, date, location);
+  var sheet = result.sheet;
+  var lastRow = sheet.getLastRow();
+  var num = lastRow; // 헤더가 1행이므로
+
+  var imgUrl = '';
+  try {
+    if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0) {
+      imgUrl = saveImageToDrive(sig.signatureImg, result.sheetName + '_' + num + '_' + sig.name);
+    }
+  } catch(imgErr) {
+    imgUrl = '이미지저장실패';
+  }
+
+  sheet.appendRow([num, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'직접서명', sig.time||'']);
+
+  return okResponse({success: true, message: sig.name + ' 서명 추가 완료'});
+}
+
+function saveSignatures(ss, data) {
+  var trainingName = data.trainingName || '연수';
+  var date = data.date || '';
+  var location = data.location || '';
+  var signatures = data.signatures || [];
+
+  var result = getOrCreateSheet(ss, trainingName, date, location);
+  var sheet = result.sheet;
 
   var lastRow = sheet.getLastRow();
   if (lastRow > 1) {
@@ -2772,14 +2892,14 @@ function saveSignatures(ss, data) {
   }
 
   if (signatures.length === 0) {
-    return okResponse({message: '서명 없음', sheetName: sheetName});
+    return okResponse({message: '서명 없음', sheetName: result.sheetName});
   }
 
   var rows = signatures.map(function(sig, i) {
     var imgUrl = '';
     try {
       if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0) {
-        imgUrl = saveImageToDrive(sig.signatureImg, sheetName + '_' + (i+1) + '_' + sig.name);
+        imgUrl = saveImageToDrive(sig.signatureImg, result.sheetName + '_' + (i+1) + '_' + sig.name);
       }
     } catch(imgErr) {
       imgUrl = '이미지저장실패';
@@ -2789,7 +2909,7 @@ function saveSignatures(ss, data) {
 
   sheet.getRange(2, 1, rows.length, 7).setValues(rows);
 
-  return okResponse({success: true, message: signatures.length + '명 저장 완료', sheetName: sheetName});
+  return okResponse({success: true, message: signatures.length + '명 저장 완료', sheetName: result.sheetName});
 }
 
 function saveImageToDrive(dataUrl, filename) {
@@ -2811,7 +2931,7 @@ function okResponse(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }`;
 
-// Render GAS code safely into the display span
+// Render GAS code
 document.addEventListener('DOMContentLoaded', function() {
   const el = document.getElementById('gas-code-display');
   if (el) el.textContent = GAS_CODE;
@@ -2841,16 +2961,66 @@ function escHtml(s) {
 // ===== INITIAL RENDER =====
 renderTrainingList();
 
-// URL 파라미터 처리: ?t=연수ID 로 접속하면 바로 해당 연수 서명 화면으로
+// =======================================================
+// ★★★ 핵심 수정: URL 파라미터 처리 (다른 기기 지원) ★★★
+// =======================================================
 (function handleUrlParam() {
   const params = new URLSearchParams(window.location.search);
+
+  // ★ 새 방식: ?d=인코딩된연수정보
+  const encodedData = params.get('d');
+  if (encodedData) {
+    const decoded = decodeTrainingFromUrl(encodedData);
+    if (decoded) {
+      // 이 기기의 localStorage에 해당 연수가 있는지 확인
+      let existing = state.trainings.find(x => x.id === decoded.id);
+
+      if (!existing) {
+        // 없으면 임시로 추가 (서명 수집용)
+        existing = decoded;
+        state.trainings.push(existing);
+        saveState();
+        console.log('📥 QR 링크에서 연수 정보 복원:', decoded.name);
+      }
+
+      // 바로 해당 연수 서명 화면으로 이동
+      state.currentTraining = existing;
+      document.getElementById('sign-form-training-name').textContent = existing.name;
+
+      let detail = '';
+      if (existing.date) detail += '📅 ' + existing.date;
+      if (existing.time) detail += ' | ⏰ ' + existing.time;
+      if (existing.location) detail += '<br>📍 ' + escHtml(existing.location);
+      document.getElementById('sign-form-training-detail').innerHTML = detail;
+
+      document.getElementById('sign-dept').value = '';
+      document.getElementById('sign-position').value = '';
+      document.getElementById('sign-name').value = '';
+
+      // 외부 기기에서는 명단 검증 없이 자유 입력
+      document.getElementById('sign-dept').placeholder = '소속 입력';
+      document.getElementById('sign-name').placeholder = '성명 입력';
+      removeRosterAutocomplete();
+
+      showScreen('screen-sign-form');
+      return;
+    }
+  }
+
+  // ★ 레거시 방식: ?t=연수ID (같은 기기에서만 작동)
   const tid = params.get('t');
   if (tid) {
     const found = state.trainings.find(x => x.id === tid);
     if (found) {
-      // 바로 해당 연수 서명 화면으로 이동
       state.currentTraining = found;
       document.getElementById('sign-form-training-name').textContent = found.name;
+
+      let detail = '';
+      if (found.date) detail += '📅 ' + found.date;
+      if (found.time) detail += ' | ⏰ ' + found.time;
+      if (found.location) detail += '<br>📍 ' + escHtml(found.location);
+      document.getElementById('sign-form-training-detail').innerHTML = detail;
+
       document.getElementById('sign-dept').value = '';
       document.getElementById('sign-position').value = '';
       document.getElementById('sign-name').value = '';
@@ -2862,19 +3032,22 @@ renderTrainingList();
       }
       showScreen('screen-sign-form');
     } else {
-      // 연수 ID는 있지만 이 기기에 없음 → 안내
       showUserFlow();
       const container = document.getElementById('user-training-list');
       container.innerHTML = `
         <div style="text-align:center;padding:36px 20px;color:#E84444;font-size:14px;line-height:1.8;">
           ⚠️ 이 링크의 연수 정보를 찾을 수 없습니다.<br>
-          <span style="color:#94A3B8;font-size:13px;">이 앱은 브라우저 로컬 저장소를 사용합니다.<br>
-          관리자가 등록한 기기에서만 데이터가 유지됩니다.<br><br>
-          <strong style="color:#3B6EEA;">GitHub Pages에 배포하면 QR 링크가 정상 작동합니다.</strong></span>
+          <span style="color:#94A3B8;font-size:13px;">관리자에게 새 QR 링크를 요청해주세요.</span>
         </div>`;
     }
   }
 })();
 </script>
 </body>
-</html>
+</html>'''
+
+with open('/home/user/training_sign_helper_v2.html', 'w', encoding='utf-8') as f:
+    f.write(html_code)
+
+print("✅ 파일 생성 완료!")
+print(f"파일 크기: {len(html_code):,} bytes")
