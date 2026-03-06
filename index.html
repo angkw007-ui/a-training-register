@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,1019 +9,441 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
-    --blue: #3B6EEA;
-    --blue-light: #5B8BF5;
-    --blue-dark: #2A55C9;
-    --red: #E84444;
-    --green: #22A06B;
-    --gray-50: #F8FAFC;
-    --gray-100: #F1F5F9;
-    --gray-200: #E2E8F0;
-    --gray-300: #CBD5E1;
-    --gray-400: #94A3B8;
-    --gray-500: #64748B;
-    --gray-700: #334155;
-    --gray-900: #0F172A;
-    --white: #FFFFFF;
+    --blue: #3B6EEA; --blue-dark: #2A55C9;
+    --red: #E84444; --green: #22A06B;
+    --gray-50: #F8FAFC; --gray-100: #F1F5F9; --gray-200: #E2E8F0;
+    --gray-300: #CBD5E1; --gray-400: #94A3B8; --gray-500: #64748B;
+    --gray-700: #334155; --gray-900: #0F172A; --white: #FFFFFF;
     --shadow: 0 4px 24px rgba(59,110,234,0.10);
     --shadow-lg: 0 8px 40px rgba(59,110,234,0.16);
-    --accent: #3A9B5C;
-    --accent-dark: #2E7D48;
-    --accent-bg: #E8F5ED;
-    --accent-border: #A8DFB8;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--accent-bg);
-    min-height: 100vh;
-    color: var(--gray-900);
-  }
-
-  .screen { display: none; }
-  .screen.active { display: flex; }
-
-  /* ===== MAIN SCREEN ===== */
-  #screen-main {
-    min-height: 100vh;
-    background: linear-gradient(145deg, #6DBF8A 0%, #4CAF70 50%, #3A9B5C 100%);
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-
-  .main-card {
-    background: var(--white);
-    border-radius: 28px;
-    padding: 48px 40px 36px;
-    width: 100%;
-    max-width: 420px;
-    box-shadow: 0 20px 60px rgba(30,50,120,0.25);
-    position: relative;
-    text-align: center;
-  }
-
-  .main-icon {
-    font-size: 48px;
-    margin-bottom: 8px;
-  }
-
-  .main-title {
-    font-size: 26px;
-    font-weight: 900;
-    color: var(--gray-900);
-    line-height: 1.3;
-  }
-
-  .main-title span {
-    display: block;
-    color: var(--accent);
-    font-size: 30px;
-  }
-
-  .main-subtitle {
-    font-size: 13px;
-    color: var(--gray-400);
-    margin-top: 6px;
-  }
-
-  .storage-indicator {
-    margin-top: 16px;
-    font-size: 11px;
-    color: var(--gray-400);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-  }
-
-  .storage-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--green);
-  }
-
-  .main-buttons {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 14px;
-    padding: 18px;
-    font-size: 18px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 16px rgba(58,155,92,0.35);
-  }
-
-  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); }
-
-  .btn-secondary {
-    background: var(--gray-100);
-    color: var(--gray-700);
-    border: 1.5px solid var(--gray-200);
-    border-radius: 14px;
-    padding: 16px;
-    font-size: 16px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-secondary:hover { background: var(--gray-200); }
-
-  .guide-box {
-    background: #F0FBF4;
-    border: 1.5px solid var(--accent-border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-top: 28px;
-    text-align: left;
-  }
-
-  .guide-title {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--accent-dark);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .guide-step {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    margin-bottom: 8px;
-  }
-  .guide-step:last-child { margin-bottom: 0; }
-
-  .guide-num {
-    min-width: 20px; height: 20px;
-    background: var(--accent);
-    color: white;
-    border-radius: 50%;
-    font-size: 11px; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    margin-top: 1px;
-  }
-
-  .guide-text {
-    font-size: 12.5px;
-    color: #334155;
-    line-height: 1.55;
-  }
-  .guide-text strong { color: var(--accent-dark); font-weight: 700; }
-
-  /* ===== MODAL ===== */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(15,23,42,0.5);
-    z-index: 1000;
-    align-items: center; justify-content: center;
-    padding: 16px;
-  }
-  .modal-overlay.active { display: flex; }
-
-  .modal {
-    background: white;
-    border-radius: 20px;
-    padding: 32px;
-    width: 100%; max-width: 360px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    animation: modalIn 0.25s ease;
-  }
-
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-
-  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-
-  .modal input {
-    width: 100%;
-    border: 1.5px solid var(--gray-200);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 15px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 12px;
-  }
-  .modal input:focus { border-color: var(--blue); }
-
-  .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
-
-  .btn-sm-secondary {
-    flex: 1; background: var(--gray-100); border: none; border-radius: 10px;
-    padding: 12px; font-size: 14px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-700);
-  }
-
-  .btn-sm-primary {
-    flex: 1; background: var(--blue); border: none; border-radius: 10px;
-    padding: 12px; font-size: 14px; font-weight: 700; font-family: inherit;
-    cursor: pointer; color: white;
-  }
-
-  /* ===== ADMIN DASHBOARD ===== */
-  #screen-admin {
-    flex-direction: column;
-    min-height: 100vh;
-    background: var(--gray-50);
-  }
-
-  .admin-header {
-    background: white;
-    border-bottom: 1px solid var(--gray-200);
-    padding: 16px 32px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-  }
-
-  .admin-header h1 { font-size: 20px; font-weight: 800; color: var(--gray-900); }
-
-  .btn-logout {
-    border: none; background: none; color: var(--gray-500);
-    font-size: 14px; font-weight: 500; font-family: inherit;
-    cursor: pointer; padding: 8px 12px;
-  }
-
-  .admin-content {
-    padding: 32px; max-width: 1100px; margin: 0 auto; width: 100%;
-  }
-
-  .card {
-    background: white; border-radius: 16px; padding: 28px;
-    box-shadow: var(--shadow); margin-bottom: 24px;
-  }
-
-  .card-title {
-    font-size: 17px; font-weight: 800; color: var(--gray-900);
-    padding-left: 14px; border-left: 4px solid var(--blue);
-    margin-bottom: 20px;
-  }
-
-  .roster-info {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    flex-wrap: wrap; gap: 12px;
-  }
-  .roster-count { font-size: 14px; font-weight: 500; color: var(--gray-700); }
-  .roster-count strong { color: var(--blue); }
-  .roster-note { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
-  .roster-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .btn-danger-outline {
-    border: 1.5px solid var(--red); color: var(--red); background: white;
-    border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-  }
-  .btn-green-outline {
-    border: 1.5px solid var(--green); color: var(--green); background: white;
-    border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-  }
-  .btn-blue-outline {
-    border: 1.5px solid var(--blue); color: var(--blue); background: white;
-    border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600;
-    font-family: inherit; cursor: pointer;
-  }
-
-  /* Type tabs */
-  .type-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-
-  .tab-btn {
-    flex: 1; padding: 14px; border-radius: 10px;
-    border: 1.5px solid var(--gray-200); background: white;
-    font-size: 14px; font-weight: 600; font-family: inherit;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    gap: 6px; transition: all 0.2s; color: var(--gray-500);
-  }
-  .tab-btn.active { background: #EEF2FF; border-color: var(--blue); color: var(--blue); }
-
-  .form-row {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 12px; margin-bottom: 12px;
-  }
-
-  .form-input {
-    border: 1.5px solid var(--gray-200); border-radius: 10px;
-    padding: 12px 14px; font-size: 14px; font-family: inherit;
-    outline: none; width: 100%; transition: border-color 0.2s; color: var(--gray-900);
-  }
-  .form-input:focus { border-color: var(--blue); }
-  .form-input::placeholder { color: var(--gray-300); }
-
-  .checkbox-row {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 16px; font-size: 13px; color: var(--gray-700);
-    cursor: pointer; font-weight: 500;
-  }
-  .checkbox-row input { width: 15px; height: 15px; cursor: pointer; accent-color: var(--blue); }
-
-  .btn-register {
-    width: 100%; background: var(--blue); color: white; border: none;
-    border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700;
-    font-family: inherit; cursor: pointer; transition: all 0.2s;
-  }
-  .btn-register:hover { background: var(--blue-dark); }
-
-  /* List */
-  .list-header {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
-  }
-  .list-title { font-size: 17px; font-weight: 800; }
-
-  .btn-refresh {
-    border: 1.5px solid var(--gray-200); background: white; border-radius: 8px;
-    padding: 7px 14px; font-size: 12px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-600); display: flex; align-items: center; gap: 5px;
-  }
-
-  .training-item {
-    background: white; border-radius: 12px; padding: 18px 20px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 16px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); margin-bottom: 10px;
-    flex-wrap: wrap;
-  }
-
-  .training-info { flex: 1; min-width: 200px; }
-  .training-badges { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-
-  .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-  .badge-external { background: #FFF3E0; color: #E65100; }
-  .badge-internal { background: #E8F5E9; color: #2E7D32; }
-
-  .training-name { font-size: 16px; font-weight: 700; color: var(--gray-900); }
-
-  .training-meta {
-    font-size: 12px; color: var(--gray-500); margin-top: 4px;
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  }
-  .training-meta span { display: flex; align-items: center; gap: 4px; }
-  .signature-count { color: var(--blue); font-weight: 700; }
-
-  .training-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .btn-action {
-    border: 1.5px solid var(--gray-200); background: white; border-radius: 8px;
-    padding: 7px 14px; font-size: 13px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-700); transition: all 0.2s;
-  }
-  .btn-action:hover { border-color: var(--blue); color: var(--blue); }
-  .btn-action-green { border-color: var(--green); color: var(--green); }
-  .btn-action-blue { border-color: var(--blue); color: var(--blue); }
-  .btn-action-red { border-color: var(--red); color: var(--red); }
-
-  .empty-list { text-align: center; padding: 40px; color: var(--gray-400); font-size: 14px; }
-
-  /* ===== USER SCREEN ===== */
-  #screen-user {
-    flex-direction: column; min-height: 100vh; background: var(--gray-50);
-    align-items: center; justify-content: flex-start; padding: 32px 16px;
-  }
-
-  .user-header {
-    width: 100%; max-width: 480px;
-    display: flex; align-items: center; margin-bottom: 20px; gap: 12px;
-  }
-
-  .btn-back {
-    background: white; border: 1.5px solid var(--gray-200); border-radius: 10px;
-    padding: 8px 14px; font-size: 14px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-600); display: flex; align-items: center;
-    gap: 5px; transition: all 0.2s; flex-shrink: 0;
-  }
-  .btn-back:hover { background: var(--gray-100); }
-
-  .user-title {
-    font-size: 22px; font-weight: 800; color: var(--gray-900); text-align: center; flex: 1;
-  }
-
-  .training-select-card {
-    background: white; border-radius: 14px; padding: 20px 22px;
-    width: 100%; max-width: 480px; cursor: pointer;
-    border: 2px solid transparent; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-    transition: all 0.2s; margin-bottom: 10px; border-left: 5px solid var(--blue);
-  }
-  .training-select-card:hover {
-    border-color: var(--blue); box-shadow: 0 4px 20px rgba(59,110,234,0.15);
-    transform: translateY(-1px);
-  }
-  .training-select-date { font-size: 12px; color: var(--gray-400); margin-bottom: 6px; }
-  .training-select-name { font-size: 18px; font-weight: 800; color: var(--gray-900); }
-  .training-select-location { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
-
-  /* ===== SIGN FORM ===== */
-  #screen-sign-form {
-    flex-direction: column; min-height: 100vh; background: var(--gray-100);
-    align-items: center; justify-content: center; padding: 24px;
-  }
-
-  .sign-form-card {
-    background: white; border-radius: 20px; padding: 36px 32px;
-    width: 100%; max-width: 380px; box-shadow: var(--shadow-lg);
-  }
-
-  .sign-form-training-name {
-    font-size: 20px; font-weight: 800; text-align: center; color: var(--gray-900);
-    margin-bottom: 8px;
-  }
-
-  .sign-form-training-detail {
-    font-size: 13px; color: var(--gray-500); text-align: center;
-    margin-bottom: 24px; padding-bottom: 20px;
-    border-bottom: 1px solid var(--gray-100); line-height: 1.6;
-  }
-
-  .sign-form-input {
-    border: 1.5px solid var(--gray-200); border-radius: 12px;
-    padding: 14px 16px; font-size: 15px; font-family: inherit;
-    outline: none; width: 100%; transition: border-color 0.2s;
-    margin-bottom: 12px; color: var(--gray-900);
-  }
-  .sign-form-input:focus { border-color: var(--blue); }
-  .sign-form-input::placeholder { color: var(--gray-300); }
-
-  .btn-confirm {
-    width: 100%; background: var(--blue); color: white; border: none;
-    border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700;
-    font-family: inherit; cursor: pointer; margin-top: 8px; transition: all 0.2s;
-  }
-  .btn-confirm:hover { background: var(--blue-dark); }
-
-  /* ===== SIGNATURE SCREEN ===== */
-  #screen-signature {
-    flex-direction: column; min-height: 100vh;
-    background: rgba(15,23,42,0.6);
-    align-items: center; justify-content: center; padding: 24px;
-  }
-
-  .signature-card {
-    background: var(--gray-50); border-radius: 20px; padding: 28px 28px 32px;
-    width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  }
-
-  .sig-training-label { font-size: 12px; color: var(--gray-400); text-align: center; }
-  .sig-training-name { font-size: 14px; font-weight: 700; color: var(--gray-700); text-align: center; margin-top: 2px; }
-  .sig-name { font-size: 22px; font-weight: 800; color: var(--blue); text-align: center; margin-top: 12px; }
-
-  .sig-instruction {
-    font-size: 13px; color: var(--red); text-align: center;
-    margin-top: 8px; margin-bottom: 16px; font-weight: 500;
-  }
-
-  .sig-mode-tabs {
-    display: flex; background: var(--gray-100); border-radius: 10px;
-    padding: 4px; margin-bottom: 14px; gap: 4px;
-  }
-
-  .sig-mode-btn {
-    flex: 1; border: none; background: transparent; border-radius: 8px;
-    padding: 9px 6px; font-size: 13px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-500); transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-  }
-  .sig-mode-btn.active {
-    background: white; color: var(--blue); box-shadow: 0 1px 6px rgba(0,0,0,0.10);
-  }
-
-  .sig-canvas-wrap {
-    border: 2px dashed var(--gray-300); border-radius: 12px;
-    background: white; overflow: hidden; cursor: crosshair; position: relative;
-  }
-
-  #sig-canvas { display: block; width: 100%; height: 200px; touch-action: none; }
-
-  .sig-upload-wrap {
-    display: flex; border: 2px dashed var(--gray-300); border-radius: 12px;
-    background: white; min-height: 200px; align-items: center; justify-content: center;
-    flex-direction: column; gap: 10px; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s; position: relative; overflow: hidden;
-  }
-  .sig-upload-wrap.dragover { border-color: var(--blue); background: #EEF2FF; }
-  .sig-upload-wrap.has-image { border-style: solid; border-color: var(--gray-200); }
-
-  .sig-upload-icon { font-size: 32px; }
-  .sig-upload-label { font-size: 14px; color: var(--gray-500); font-weight: 500; text-align: center; }
-  .sig-upload-sub { font-size: 11px; color: var(--gray-400); }
-  #sig-upload-input { display: none; }
-
-  #sig-upload-preview {
-    width: 100%; height: 200px; object-fit: contain; display: none; padding: 8px;
-  }
-
-  .sig-upload-change {
-    position: absolute; bottom: 8px; right: 8px;
-    background: var(--blue); color: white; border: none; border-radius: 6px;
-    padding: 5px 10px; font-size: 11px; font-weight: 700; font-family: inherit;
-    cursor: pointer; display: none;
-  }
-
-  .sig-actions { display: flex; gap: 10px; margin-top: 16px; }
-
-  .btn-sig-clear, .btn-sig-cancel {
-    border: 1.5px solid var(--gray-300); background: white; border-radius: 10px;
-    padding: 12px 18px; font-size: 14px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-700); flex: 1;
-  }
-
-  .btn-sig-done {
-    background: var(--blue); border: none; border-radius: 10px;
-    padding: 12px 24px; font-size: 14px; font-weight: 700; font-family: inherit;
-    cursor: pointer; color: white; flex: 2; transition: all 0.2s;
-  }
-  .btn-sig-done:hover { background: var(--blue-dark); }
-
-  /* ===== SUCCESS SCREEN ===== */
-  #screen-success {
-    flex-direction: column; min-height: 100vh; background: var(--gray-50);
-    align-items: center; justify-content: center; padding: 24px; text-align: center;
-  }
-
-  .success-icon {
-    width: 80px; height: 80px; background: #E8F5E9; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 36px; margin: 0 auto 20px;
-  }
-
-  .success-title { font-size: 24px; font-weight: 800; color: var(--gray-900); }
-  .success-sub { font-size: 14px; color: var(--gray-500); margin-top: 8px; }
-
-  .btn-back-main {
-    margin-top: 32px; background: var(--blue); color: white; border: none;
-    border-radius: 12px; padding: 14px 32px; font-size: 15px; font-weight: 700;
-    font-family: inherit; cursor: pointer; transition: all 0.2s;
-  }
-  .btn-back-main:hover { background: var(--blue-dark); }
-
-  /* ===== RESULT ===== */
-  .result-type-btn {
-    padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--gray-200);
-    background: white; font-size: 13px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-500); transition: all 0.2s;
-  }
-  .result-type-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
-
-  /* ===== PRINT ===== */
-  @media print {
-    body > * { display: none !important; }
-    #pdf-print-area { display: block !important; }
-  }
-  #pdf-print-area { display: none; }
-
-  .reg-form-wrap { font-family: 'Noto Sans KR', sans-serif; background: white; }
-  .reg-form-title {
-    text-align: center; font-size: 22px; font-weight: 900;
-    margin-bottom: 8px; letter-spacing: 3px;
-  }
-  .reg-form-meta {
-    text-align: center; font-size: 15px; font-weight: 600;
-    color: #333; margin-bottom: 18px; letter-spacing: 0.3px;
-  }
-  .reg-form-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  .reg-form-table th, .reg-form-table td {
-    border: 1px solid #444; padding: 0; text-align: center; vertical-align: middle;
-  }
-  .reg-form-table th {
-    background: #EEF4FF; font-weight: 700; padding: 9px 4px; font-size: 14px;
-  }
-  .reg-form-table td { height: 58px; font-size: 14px; }
-  .reg-form-table .td-num { width: 34px; font-size: 12px; color: #888; }
-  .reg-form-table .td-dept { width: 90px; }
-  .reg-form-table .td-pos { width: 80px; }
-  .reg-form-table .td-name { width: 80px; font-weight: 700; }
-  .reg-form-table .td-sig { min-width: 160px; }
-  .reg-form-table .td-remark { width: 80px; }
-  .sig-cell-img { max-width: 140px; max-height: 48px; object-fit: contain; display: block; margin: auto; }
-  .reg-form-footer { margin-top: 12px; font-size: 11px; color: #bbb; text-align: right; }
-
-  /* ===== GOOGLE SHEETS ===== */
-  .gas-setup-card {
-    background: white; border-radius: 16px; box-shadow: var(--shadow);
-    margin-bottom: 24px; overflow: hidden;
-  }
-  .gas-setup-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 28px; cursor: pointer; user-select: none;
-    border-bottom: 1px solid transparent; transition: border-color 0.2s;
-  }
-  .gas-setup-header.open { border-bottom-color: var(--gray-100); }
-  .gas-setup-header-left { display: flex; align-items: center; gap: 12px; }
-  .gas-status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0; }
-  .gas-status-dot.connected { background: var(--green); box-shadow: 0 0 0 3px rgba(34,160,107,0.2); }
-  .gas-setup-title { font-size: 16px; font-weight: 800; color: var(--gray-900); }
-  .gas-setup-subtitle { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
-  .gas-toggle-arrow { font-size: 18px; color: var(--gray-400); transition: transform 0.2s; }
-  .gas-toggle-arrow.open { transform: rotate(180deg); }
-  .gas-setup-body { display: none; padding: 24px 28px; }
-  .gas-setup-body.open { display: block; }
-
-  .setup-steps { display: flex; flex-direction: column; gap: 0; }
-  .setup-step { display: flex; gap: 16px; position: relative; padding-bottom: 28px; }
-  .setup-step:last-child { padding-bottom: 0; }
-  .setup-step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
-  .setup-step-num {
-    width: 32px; height: 32px; background: var(--blue); color: white;
-    border-radius: 50%; font-size: 14px; font-weight: 800;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .setup-step-line { width: 2px; flex: 1; background: var(--gray-200); margin-top: 6px; min-height: 20px; }
-  .setup-step:last-child .setup-step-line { display: none; }
-  .setup-step-content { flex: 1; padding-top: 4px; }
-  .setup-step-title { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
-  .setup-step-desc { font-size: 13px; color: var(--gray-600); line-height: 1.6; margin-bottom: 10px; }
-  .setup-step-desc strong { color: var(--blue); font-weight: 700; }
-
-  .code-block {
-    background: #1E2A3A; border-radius: 10px; padding: 14px 16px;
-    font-family: 'Courier New', monospace; font-size: 11.5px; color: #A8D8A8;
-    line-height: 1.7; position: relative; margin-bottom: 10px;
-    white-space: pre-wrap; word-break: break-all; max-height: 340px; overflow-y: auto;
-  }
-  .btn-copy-code {
-    position: absolute; top: 10px; right: 10px;
-    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600;
-    color: white; cursor: pointer; font-family: inherit; transition: background 0.2s;
-  }
-  .btn-copy-code:hover { background: rgba(255,255,255,0.25); }
-
-  .setup-url-input-wrap { display: flex; gap: 8px; margin-top: 8px; }
-  .setup-url-input {
-    flex: 1; border: 1.5px solid var(--gray-200); border-radius: 10px;
-    padding: 11px 14px; font-size: 13px; font-family: inherit; outline: none;
-    color: var(--gray-900); transition: border-color 0.2s;
-  }
-  .setup-url-input:focus { border-color: var(--blue); }
-  .setup-url-input::placeholder { color: var(--gray-300); }
-  .btn-connect {
-    background: var(--blue); color: white; border: none; border-radius: 10px;
-    padding: 11px 20px; font-size: 13px; font-weight: 700; font-family: inherit;
-    cursor: pointer; white-space: nowrap; transition: background 0.2s;
-  }
-  .btn-connect:hover { background: var(--blue-dark); }
-  .connection-status-box {
-    border-radius: 10px; padding: 12px 16px; font-size: 13px;
-    font-weight: 600; margin-top: 10px; display: none;
-  }
-  .connection-status-box.success { background: #E8F5E9; color: #2E7D32; display: block; }
-  .connection-status-box.error { background: #FFEBEE; color: #C62828; display: block; }
-
-  .btn-sync-now {
-    background: #22A06B; color: white; border: none; border-radius: 10px;
-    padding: 10px 20px; font-size: 13px; font-weight: 700; font-family: inherit;
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
-    transition: background 0.2s; margin-top: 12px;
-  }
-  .btn-sync-now:hover { background: #1a7d55; }
-  .sync-result-box {
-    border-radius: 10px; padding: 12px 16px; font-size: 13px;
-    margin-top: 8px; display: none; line-height: 1.5;
-  }
-  .sync-result-box.show { display: block; }
-  .sync-result-box.ok { background: #E8F5E9; color: #2E7D32; }
-  .sync-result-box.fail { background: #FFEBEE; color: #C62828; }
-
-  /* Admin tabs */
-  .admin-tabs {
-    display: flex; border-bottom: 2px solid var(--gray-200);
-    margin-bottom: 24px; gap: 4px;
-  }
-  .admin-tab-btn {
-    padding: 10px 20px; border: none; background: none;
-    font-size: 14px; font-weight: 600; font-family: inherit;
-    cursor: pointer; color: var(--gray-500);
-    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
-  }
-  .admin-tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
-  .admin-tab-panel { display: none; }
-  .admin-tab-panel.active { display: block; }
-
-  /* ===== QR ===== */
-  .qr-modal-body { display: flex; flex-direction: column; gap: 20px; }
-  .qr-section { border: 1.5px solid var(--gray-200); border-radius: 14px; padding: 18px 20px; }
-  .qr-section-title {
-    font-size: 14px; font-weight: 800; color: var(--gray-900);
-    margin-bottom: 14px; display: flex; align-items: center; gap: 7px;
-  }
-  .qr-url-box {
-    background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;
-    padding: 10px 14px; font-size: 12px; color: var(--gray-600);
-    word-break: break-all; margin-bottom: 10px; font-family: monospace;
-  }
-  .qr-canvas-wrap { display: flex; justify-content: center; margin: 10px 0; }
-  .qr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  #qr-print-area { display: none; }
-  @media print {
-    #qr-print-area.printing { display: flex !important; }
-    #pdf-print-area { display: none !important; }
-  }
-
-  .qr-poster {
-    width: 100%; min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: white; padding: 40px 30px; text-align: center;
-    font-family: 'Noto Sans KR', sans-serif;
-  }
-  .qr-poster-title { font-size: 34px; font-weight: 900; color: #0F172A; margin-bottom: 6px; line-height: 1.3; }
-  .qr-poster-date { font-size: 18px; color: #555; margin-bottom: 36px; }
-  .qr-poster-instruction {
-    font-size: 28px; font-weight: 900; color: var(--accent-dark);
-    background: var(--accent-bg); border-radius: 16px;
-    padding: 20px 36px; margin-bottom: 36px; line-height: 1.5;
-  }
-  .qr-poster-qr { margin-bottom: 30px; }
-  .qr-poster-footer { font-size: 15px; color: #94A3B8; margin-top: 20px; }
-
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--gray-900); color: white;
-    padding: 12px 24px; border-radius: 100px;
-    font-size: 14px; font-weight: 500;
-    opacity: 0; transition: all 0.3s; z-index: 9999; white-space: nowrap;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  @media (max-width: 600px) {
-    .admin-header { padding: 14px 16px; }
-    .admin-content { padding: 16px; }
-    .form-row { grid-template-columns: 1fr; }
-    .training-item { flex-direction: column; align-items: flex-start; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans KR',sans-serif;background:#E8F5ED;min-height:100vh;color:var(--gray-900)}
+  .screen{display:none}.screen.active{display:flex}
+
+  /* MAIN */
+  #screen-main{min-height:100vh;background:linear-gradient(145deg,#6DBF8A 0%,#4CAF70 50%,#3A9B5C 100%);align-items:center;justify-content:center;padding:24px}
+  .main-card{background:var(--white);border-radius:28px;padding:48px 40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(30,50,120,0.25);text-align:center}
+  .main-title{font-size:26px;font-weight:900;color:var(--gray-900);line-height:1.3}
+  .main-title span{display:block;color:#3A9B5C;font-size:30px}
+  .storage-indicator{margin-top:16px;font-size:11px;color:var(--gray-400);display:flex;align-items:center;justify-content:center;gap:5px}
+  .storage-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .main-buttons{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+  .btn-primary{background:#3A9B5C;color:white;border:none;border-radius:14px;padding:18px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(58,155,92,.35)}
+  .btn-primary:hover{background:#2E7D48;transform:translateY(-1px)}
+  .btn-secondary{background:var(--gray-100);color:var(--gray-700);border:1.5px solid var(--gray-200);border-radius:14px;padding:16px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s}
+  .btn-secondary:hover{background:var(--gray-200)}
+
+  .guide-box{background:#F0FBF4;border:1.5px solid #A8DFB8;border-radius:14px;padding:18px 20px;margin-top:28px;text-align:left}
+  .guide-title{font-size:13px;font-weight:800;color:#2E7D48;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .guide-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+  .guide-step:last-child{margin-bottom:0}
+  .guide-num{min-width:20px;height:20px;background:#3A9B5C;color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .guide-text{font-size:12.5px;color:#334155;line-height:1.55}
+  .guide-text strong{color:#2E7D48;font-weight:700}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;align-items:center;justify-content:center;padding:16px}
+  .modal-overlay.active{display:flex}
+  .modal{background:white;border-radius:20px;padding:32px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .25s ease}
+  @keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-title{font-size:18px;font-weight:700;margin-bottom:16px}
+  .modal input{width:100%;border:1.5px solid var(--gray-200);border-radius:10px;padding:12px 14px;font-size:15px;font-family:inherit;outline:none;transition:border-color .2s;margin-bottom:12px}
+  .modal input:focus{border-color:var(--blue)}
+  .modal-btns{display:flex;gap:10px;margin-top:4px}
+  .btn-sm-secondary{flex:1;background:var(--gray-100);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-700)}
+  .btn-sm-primary{flex:1;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;color:white}
+
+  /* ADMIN */
+  #screen-admin{flex-direction:column;min-height:100vh;background:var(--gray-50)}
+  .admin-header{background:white;border-bottom:1px solid var(--gray-200);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .admin-header h1{font-size:20px;font-weight:800}
+  .btn-logout{border:none;background:none;color:var(--gray-500);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;padding:8px 12px}
+  .admin-content{padding:32px;max-width:1100px;margin:0 auto;width:100%}
+  .card{background:white;border-radius:16px;padding:28px;box-shadow:var(--shadow);margin-bottom:24px}
+  .card-title{font-size:17px;font-weight:800;padding-left:14px;border-left:4px solid var(--blue);margin-bottom:20px}
+
+  /* ★ 동기화 필수 안내 배너 */
+  .sync-banner{background:linear-gradient(135deg,#FFF3E0,#FFECB3);border:2px solid #FFB74D;border-radius:16px;padding:20px 24px;margin-bottom:24px;display:none}
+  .sync-banner.show{display:block}
+  .sync-banner-title{font-size:15px;font-weight:800;color:#E65100;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .sync-banner-text{font-size:13px;color:#5D4037;line-height:1.7}
+
+  .roster-info{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .roster-count{font-size:14px;font-weight:500;color:var(--gray-700)}
+  .roster-count strong{color:var(--blue)}
+  .roster-note{font-size:11px;color:var(--gray-400);margin-top:4px}
+  .roster-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-danger-outline{border:1.5px solid var(--red);color:var(--red);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+  .btn-green-outline{border:1.5px solid var(--green);color:var(--green);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+  .btn-blue-outline{border:1.5px solid var(--blue);color:var(--blue);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+
+  .category-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .category-btn{padding:10px 18px;border-radius:24px;border:1.5px solid var(--gray-200);background:white;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-500);transition:all .2s;display:flex;align-items:center;gap:5px}
+  .category-btn.active{background:#3A9B5C;border-color:#3A9B5C;color:white;box-shadow:0 2px 8px rgba(58,155,92,.3)}
+  .category-btn:hover:not(.active){background:var(--gray-100)}
+
+  .type-tabs{display:flex;gap:10px;margin-bottom:20px}
+  .tab-btn{flex:1;padding:14px;border-radius:10px;border:1.5px solid var(--gray-200);background:white;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;color:var(--gray-500)}
+  .tab-btn.active{background:#EEF2FF;border-color:var(--blue);color:var(--blue)}
+
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .form-input{border:1.5px solid var(--gray-200);border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;width:100%;transition:border-color .2s;color:var(--gray-900)}
+  .form-input:focus{border-color:var(--blue)}
+  .form-input::placeholder{color:var(--gray-300)}
+
+  .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;color:var(--gray-700);cursor:pointer;font-weight:500}
+  .checkbox-row input{width:15px;height:15px;cursor:pointer;accent-color:var(--blue)}
+
+  .btn-register{width:100%;background:var(--blue);color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+  .btn-register:hover{background:var(--blue-dark)}
+
+  .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .list-title{font-size:17px;font-weight:800}
+  .btn-refresh{border:1.5px solid var(--gray-200);background:white;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-600);display:flex;align-items:center;gap:5px}
+
+  .training-item{background:white;border-radius:12px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 1px 8px rgba(0,0,0,.06);margin-bottom:10px;flex-wrap:wrap}
+  .training-info{flex:1;min-width:200px}
+  .training-badges{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .badge-external{background:#FFF3E0;color:#E65100}
+  .badge-internal{background:#E8F5E9;color:#2E7D32}
+  .badge-category{background:#E3F2FD;color:#1565C0}
+  .training-name{font-size:16px;font-weight:700}
+  .training-meta{font-size:12px;color:var(--gray-500);margin-top:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .training-meta span{display:flex;align-items:center;gap:4px}
+  .signature-count{color:var(--blue);font-weight:700}
+  .training-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-action{border:1.5px solid var(--gray-200);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-700);transition:all .2s}
+  .btn-action:hover{border-color:var(--blue);color:var(--blue)}
+  .btn-action-green{border-color:var(--green);color:var(--green)}
+  .btn-action-blue{border-color:var(--blue);color:var(--blue)}
+  .btn-action-red{border-color:var(--red);color:var(--red)}
+  .btn-action-sync{border-color:#FF9800;color:#E65100;background:#FFF8E1;font-weight:700}
+  .empty-list{text-align:center;padding:40px;color:var(--gray-400);font-size:14px}
+
+  /* USER */
+  #screen-user{flex-direction:column;min-height:100vh;background:var(--gray-50);align-items:center;justify-content:flex-start;padding:32px 16px}
+  .user-header{width:100%;max-width:480px;display:flex;align-items:center;margin-bottom:20px;gap:12px}
+  .btn-back{background:white;border:1.5px solid var(--gray-200);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-600);display:flex;align-items:center;gap:5px;transition:all .2s;flex-shrink:0}
+  .btn-back:hover{background:var(--gray-100)}
+  .user-title{font-size:22px;font-weight:800;text-align:center;flex:1}
+
+  .training-select-card{background:white;border-radius:14px;padding:20px 22px;width:100%;max-width:480px;cursor:pointer;border:2px solid transparent;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:all .2s;margin-bottom:10px;border-left:5px solid var(--blue)}
+  .training-select-card:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(59,110,234,.15);transform:translateY(-1px)}
+  .training-select-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:#E3F2FD;color:#1565C0;margin-bottom:6px}
+  .training-select-date{font-size:12px;color:var(--gray-400);margin-bottom:6px}
+  .training-select-name{font-size:18px;font-weight:800}
+  .training-select-location{font-size:13px;color:var(--gray-500);margin-top:4px}
+
+  /* SIGN FORM */
+  #screen-sign-form{flex-direction:column;min-height:100vh;background:var(--gray-100);align-items:center;justify-content:center;padding:24px}
+  .sign-form-card{background:white;border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:var(--shadow-lg)}
+  .sign-form-training-name{font-size:20px;font-weight:800;text-align:center;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--gray-100)}
+  .sign-form-training-detail{font-size:13px;color:var(--gray-500);text-align:center;margin-top:-16px;margin-bottom:20px;line-height:1.6}
+  .sign-form-input{border:1.5px solid var(--gray-200);border-radius:12px;padding:14px 16px;font-size:15px;font-family:inherit;outline:none;width:100%;transition:border-color .2s;margin-bottom:12px;color:var(--gray-900)}
+  .sign-form-input:focus{border-color:var(--blue)}
+  .sign-form-input::placeholder{color:var(--gray-300)}
+  .btn-confirm{width:100%;background:var(--blue);color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:8px;transition:all .2s}
+  .btn-confirm:hover{background:var(--blue-dark)}
+
+  /* SIGNATURE */
+  #screen-signature{flex-direction:column;min-height:100vh;background:rgba(15,23,42,.6);align-items:center;justify-content:center;padding:24px}
+  .signature-card{background:var(--gray-50);border-radius:20px;padding:28px 28px 32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .sig-training-label{font-size:12px;color:var(--gray-400);text-align:center}
+  .sig-training-name{font-size:14px;font-weight:700;color:var(--gray-700);text-align:center;margin-top:2px}
+  .sig-name{font-size:22px;font-weight:800;color:var(--blue);text-align:center;margin-top:12px}
+  .sig-instruction{font-size:13px;color:var(--red);text-align:center;margin-top:8px;margin-bottom:16px;font-weight:500}
+  .sig-mode-tabs{display:flex;background:var(--gray-100);border-radius:10px;padding:4px;margin-bottom:14px;gap:4px}
+  .sig-mode-btn{flex:1;border:none;background:transparent;border-radius:8px;padding:9px 6px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-500);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+  .sig-mode-btn.active{background:white;color:var(--blue);box-shadow:0 1px 6px rgba(0,0,0,.10)}
+  .sig-canvas-wrap{border:2px dashed var(--gray-300);border-radius:12px;background:white;overflow:hidden;cursor:crosshair;position:relative}
+  #sig-canvas{display:block;width:100%;height:200px;touch-action:none}
+  .sig-upload-wrap{display:flex;border:2px dashed var(--gray-300);border-radius:12px;background:white;min-height:200px;align-items:center;justify-content:center;flex-direction:column;gap:10px;cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
+  .sig-upload-wrap.dragover{border-color:var(--blue);background:#EEF2FF}
+  .sig-upload-wrap.has-image{border-style:solid;border-color:var(--gray-200)}
+  .sig-upload-icon{font-size:32px}
+  .sig-upload-label{font-size:14px;color:var(--gray-500);font-weight:500;text-align:center}
+  .sig-upload-sub{font-size:11px;color:var(--gray-400)}
+  #sig-upload-input{display:none}
+  #sig-upload-preview{width:100%;height:200px;object-fit:contain;display:none;padding:8px}
+  .sig-upload-change{position:absolute;bottom:8px;right:8px;background:var(--blue);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;display:none}
+  .sig-actions{display:flex;gap:10px;margin-top:16px}
+  .btn-sig-clear,.btn-sig-cancel{border:1.5px solid var(--gray-300);background:white;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-700);flex:1}
+  .btn-sig-done{background:var(--blue);border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;color:white;flex:2;transition:all .2s}
+  .btn-sig-done:hover{background:var(--blue-dark)}
+
+  /* SUCCESS */
+  #screen-success{flex-direction:column;min-height:100vh;background:var(--gray-50);align-items:center;justify-content:center;padding:24px;text-align:center}
+  .success-icon{width:80px;height:80px;background:#E8F5E9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px}
+  .success-title{font-size:24px;font-weight:800}
+  .success-sub{font-size:14px;color:var(--gray-500);margin-top:8px}
+  .btn-back-main{margin-top:32px;background:var(--blue);color:white;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+  .btn-back-main:hover{background:var(--blue-dark)}
+
+  /* RESULT */
+  .result-type-btn{padding:8px 16px;border-radius:20px;border:1.5px solid var(--gray-200);background:white;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-500);transition:all .2s}
+  .result-type-btn.active{background:var(--blue);border-color:var(--blue);color:white}
+
+  /* PRINT / PDF — ★ 핵심 수정: 별도 인쇄 스타일 */
+  #pdf-print-area{display:none}
+  .reg-form-wrap{font-family:'Noto Sans KR',sans-serif;background:white}
+  .reg-form-title{text-align:center;font-size:22px;font-weight:900;margin-bottom:8px;letter-spacing:3px}
+  .reg-form-meta{text-align:center;font-size:15px;font-weight:600;color:#333;margin-bottom:18px}
+  .reg-form-table{width:100%;border-collapse:collapse;font-size:14px}
+  .reg-form-table th,.reg-form-table td{border:1px solid #444;padding:0;text-align:center;vertical-align:middle}
+  .reg-form-table th{background:#EEF4FF;font-weight:700;padding:9px 4px;font-size:14px}
+  .reg-form-table td{height:58px;font-size:14px}
+  .reg-form-table .td-num{width:34px;font-size:12px;color:#888}
+  .reg-form-table .td-dept{width:90px}
+  .reg-form-table .td-pos{width:80px}
+  .reg-form-table .td-name{width:80px;font-weight:700}
+  .reg-form-table .td-sig{min-width:160px}
+  .reg-form-table .td-remark{width:80px}
+  .sig-cell-img{max-width:140px;max-height:48px;object-fit:contain;display:block;margin:auto}
+  .reg-form-footer{margin-top:12px;font-size:11px;color:#bbb;text-align:right}
+
+  @media print{
+    body *{visibility:hidden}
+    #pdf-print-area,#pdf-print-area *{visibility:visible!important}
+    #pdf-print-area{display:block!important;position:fixed;left:0;top:0;width:100%;z-index:99999;background:white}
+    #qr-print-area.printing,#qr-print-area.printing *{visibility:visible!important}
+    #qr-print-area.printing{display:block!important;position:fixed;left:0;top:0;width:100%;z-index:99999;background:white}
+    #qr-print-area.printing + #pdf-print-area{display:none!important}
+  }
+
+  /* GAS */
+  .gas-setup-card{background:white;border-radius:16px;box-shadow:var(--shadow);margin-bottom:24px;overflow:hidden}
+  .gas-setup-header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;cursor:pointer;user-select:none;border-bottom:1px solid transparent;transition:border-color .2s}
+  .gas-setup-header.open{border-bottom-color:var(--gray-100)}
+  .gas-setup-header-left{display:flex;align-items:center;gap:12px}
+  .gas-status-dot{width:10px;height:10px;border-radius:50%;background:var(--gray-300);flex-shrink:0}
+  .gas-status-dot.connected{background:var(--green);box-shadow:0 0 0 3px rgba(34,160,107,.2)}
+  .gas-setup-title{font-size:16px;font-weight:800}
+  .gas-setup-subtitle{font-size:12px;color:var(--gray-400);margin-top:2px}
+  .gas-toggle-arrow{font-size:18px;color:var(--gray-400);transition:transform .2s}
+  .gas-toggle-arrow.open{transform:rotate(180deg)}
+  .gas-setup-body{display:none;padding:24px 28px}
+  .gas-setup-body.open{display:block}
+  .setup-steps{display:flex;flex-direction:column}
+  .setup-step{display:flex;gap:16px;position:relative;padding-bottom:28px}
+  .setup-step:last-child{padding-bottom:0}
+  .setup-step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+  .setup-step-num{width:32px;height:32px;background:var(--blue);color:white;border-radius:50%;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .setup-step-line{width:2px;flex:1;background:var(--gray-200);margin-top:6px;min-height:20px}
+  .setup-step:last-child .setup-step-line{display:none}
+  .setup-step-content{flex:1;padding-top:4px}
+  .setup-step-title{font-size:14px;font-weight:700;margin-bottom:6px}
+  .setup-step-desc{font-size:13px;color:var(--gray-600);line-height:1.6;margin-bottom:10px}
+  .setup-step-desc strong{color:var(--blue);font-weight:700}
+  .code-block{background:#1E2A3A;border-radius:10px;padding:14px 16px;font-family:'Courier New',monospace;font-size:11.5px;color:#A8D8A8;line-height:1.7;position:relative;margin-bottom:10px;white-space:pre-wrap;word-break:break-all;max-height:340px;overflow-y:auto}
+  .btn-copy-code{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:background .2s}
+  .btn-copy-code:hover{background:rgba(255,255,255,.25)}
+  .setup-url-input-wrap{display:flex;gap:8px;margin-top:8px}
+  .setup-url-input{flex:1;border:1.5px solid var(--gray-200);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;outline:none;color:var(--gray-900);transition:border-color .2s}
+  .setup-url-input:focus{border-color:var(--blue)}
+  .setup-url-input::placeholder{color:var(--gray-300)}
+  .btn-connect{background:var(--blue);color:white;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s}
+  .btn-connect:hover{background:var(--blue-dark)}
+  .connection-status-box{border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;margin-top:10px;display:none}
+  .connection-status-box.success{background:#E8F5E9;color:#2E7D32;display:block}
+  .connection-status-box.error{background:#FFEBEE;color:#C62828;display:block}
+  .btn-sync-now{background:#22A06B;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s;margin-top:12px}
+  .btn-sync-now:hover{background:#1a7d55}
+  .sync-result-box{border-radius:10px;padding:12px 16px;font-size:13px;margin-top:8px;display:none;line-height:1.5}
+  .sync-result-box.show{display:block}
+  .sync-result-box.ok{background:#E8F5E9;color:#2E7D32}
+  .sync-result-box.fail{background:#FFEBEE;color:#C62828}
+
+  .admin-tabs{display:flex;border-bottom:2px solid var(--gray-200);margin-bottom:24px;gap:4px}
+  .admin-tab-btn{padding:10px 20px;border:none;background:none;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--gray-500);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+  .admin-tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .admin-tab-panel{display:none}
+  .admin-tab-panel.active{display:block}
+
+  /* QR */
+  .qr-modal-body{display:flex;flex-direction:column;gap:20px}
+  .qr-section{border:1.5px solid var(--gray-200);border-radius:14px;padding:18px 20px}
+  .qr-section-title{font-size:14px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+  .qr-url-box{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--gray-600);word-break:break-all;margin-bottom:10px;font-family:monospace}
+  .qr-canvas-wrap{display:flex;justify-content:center;margin:10px 0}
+  .qr-actions{display:flex;gap:8px;flex-wrap:wrap}
+  #qr-print-area{display:none}
+  .qr-poster{width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:white;padding:40px 30px;text-align:center;font-family:'Noto Sans KR',sans-serif}
+  .qr-poster-title{font-size:34px;font-weight:900;color:#0F172A;margin-bottom:6px;line-height:1.3}
+  .qr-poster-date{font-size:18px;color:#555;margin-bottom:36px}
+  .qr-poster-instruction{font-size:28px;font-weight:900;color:#2E7D48;background:#E8F5ED;border-radius:16px;padding:20px 36px;margin-bottom:36px;line-height:1.5}
+  .qr-poster-qr{margin-bottom:30px}
+  .qr-poster-footer{font-size:15px;color:#94A3B8;margin-top:20px}
+
+  /* Loading spinner */
+  .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+  .spinner{width:40px;height:40px;border:4px solid var(--gray-200);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:14px;font-weight:600;color:var(--gray-700)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gray-900);color:white;padding:12px 24px;border-radius:100px;font-size:14px;font-weight:500;opacity:0;transition:all .3s;z-index:9999;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:600px){
+    .admin-header{padding:14px 16px}
+    .admin-content{padding:16px}
+    .form-row{grid-template-columns:1fr}
+    .training-item{flex-direction:column;align-items:flex-start}
+    .category-tabs{gap:6px}.category-btn{padding:8px 14px;font-size:13px}
   }
 </style>
 </head>
 <body>
 
-<!-- ===== MAIN SCREEN ===== -->
+<!-- MAIN -->
 <div id="screen-main" class="screen active">
   <div class="main-card">
-    <div class="main-icon">📝</div>
-    <div class="main-title">
-      등록부
-      <span>서명 도우미</span>
-    </div>
-    <div class="main-subtitle">행사 · 회의 · 연수 등 어디서나 간편하게 서명</div>
-
+    <div class="main-title">등록부<span>서명 도우미</span></div>
+    <div style="margin-top:12px;font-size:13px;color:#64748B;line-height:1.5;">연수 · 회의 · 위원회 등<br>각종 등록부 서명을 간편하게!</div>
     <div class="guide-box">
-      <div class="guide-title">📋 서명 안내</div>
-      <div class="guide-step">
-        <div class="guide-num">1</div>
-        <div class="guide-text"><strong>서명하기</strong> 버튼을 누르세요.</div>
-      </div>
-      <div class="guide-step">
-        <div class="guide-num">2</div>
-        <div class="guide-text">목록에서 <strong>해당 행사</strong>를 선택하세요.</div>
-      </div>
-      <div class="guide-step">
-        <div class="guide-num">3</div>
-        <div class="guide-text"><strong>소속 · 직위 · 성명</strong>을 입력하고 확인을 누르세요.</div>
-      </div>
-      <div class="guide-step">
-        <div class="guide-num">4</div>
-        <div class="guide-text">화면에 <strong>직접 서명</strong>하거나 서명 이미지를 <strong>업로드</strong>하세요.</div>
-      </div>
-      <div class="guide-step">
-        <div class="guide-num">5</div>
-        <div class="guide-text"><strong>서명 완료</strong> 버튼을 누르면 등록 완료! ✅</div>
-      </div>
+      <div class="guide-title">📋 이 링크를 받으신 분들께</div>
+      <div class="guide-step"><div class="guide-num">1</div><div class="guide-text"><strong>서명하기</strong> 버튼을 누르세요.</div></div>
+      <div class="guide-step"><div class="guide-num">2</div><div class="guide-text">목록에서 <strong>해당 행사</strong>를 선택하세요.</div></div>
+      <div class="guide-step"><div class="guide-num">3</div><div class="guide-text"><strong>소속 · 직위 · 성명</strong>을 입력하세요.</div></div>
+      <div class="guide-step"><div class="guide-num">4</div><div class="guide-text"><strong>직접 서명</strong>하거나 이미지를 <strong>업로드</strong>하세요.</div></div>
+      <div class="guide-step"><div class="guide-num">5</div><div class="guide-text"><strong>서명 완료</strong> 누르면 끝! ✅</div></div>
     </div>
-
     <div class="main-buttons">
       <button class="btn-primary" onclick="showUserFlow()">✍️ 서명하기</button>
       <button class="btn-secondary" onclick="showAdminLogin()">관리자 모드</button>
     </div>
-
-    <div class="storage-indicator">
-      <div class="storage-dot"></div>
-      로컬 저장소 사용 중
-    </div>
+    <div class="storage-indicator"><div class="storage-dot"></div>로컬 저장소 + 구글 시트 연동</div>
   </div>
 </div>
 
-<!-- ===== ADMIN LOGIN MODAL ===== -->
+<!-- ADMIN LOGIN -->
 <div id="modal-admin-login" class="modal-overlay">
   <div class="modal">
     <div class="modal-title">🔒 관리자 확인</div>
     <input type="password" id="admin-pw-input" placeholder="관리자 비밀번호 입력" onkeydown="if(event.key==='Enter')adminLogin()">
-    <div class="modal-btns">
-      <button class="btn-sm-secondary" onclick="closeModal('modal-admin-login')">취소</button>
-      <button class="btn-sm-primary" onclick="adminLogin()">확인</button>
-    </div>
+    <div class="modal-btns"><button class="btn-sm-secondary" onclick="closeModal('modal-admin-login')">취소</button><button class="btn-sm-primary" onclick="adminLogin()">확인</button></div>
   </div>
 </div>
 
-<!-- ===== ADMIN DASHBOARD ===== -->
+<!-- ADMIN -->
 <div id="screen-admin" class="screen">
-  <div class="admin-header">
-    <h1>📋 관리자 대시보드</h1>
-    <button class="btn-logout" onclick="goMain()">나가기</button>
-  </div>
+  <div class="admin-header"><h1>관리자 대시보드</h1><button class="btn-logout" onclick="goMain()">나가기</button></div>
   <div class="admin-content">
+
+    <!-- ★ 동기화 필수 안내 -->
+    <div class="sync-banner" id="sync-banner">
+      <div class="sync-banner-title">⚠️ 구글 시트 연동이 필요합니다!</div>
+      <div class="sync-banner-text">
+        QR/링크로 서명받으면 <strong>모바일 서명 데이터가 이 PC에 자동으로 보이지 않습니다.</strong><br>
+        <strong>구글 시트 연동</strong>을 설정하면 모바일 서명이 시트에 저장되고,<br>
+        관리자가 <strong>🔄 시트에서 불러오기</strong> 버튼으로 서명을 가져올 수 있습니다.
+      </div>
+    </div>
 
     <div class="admin-tabs">
       <button class="admin-tab-btn active" onclick="switchAdminTab('tab-manage')">📋 행사 관리</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-sheets')">📊 구글 시트 연동</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-roster')">👥 명단 관리</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-roster')">👥 교직원 명단</button>
     </div>
 
-    <!-- TAB 1: 행사 관리 -->
+    <!-- TAB 1 -->
     <div id="tab-manage" class="admin-tab-panel active">
       <div class="card">
         <div class="card-title">새 행사 등록</div>
+        <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:var(--gray-700);">행사 유형</div>
+        <div class="category-tabs" id="category-tabs">
+          <button class="category-btn active" onclick="selectCategory(this,'연수')">📖 연수</button>
+          <button class="category-btn" onclick="selectCategory(this,'회의')">🗣️ 회의</button>
+          <button class="category-btn" onclick="selectCategory(this,'위원회')">🏛️ 위원회</button>
+          <button class="category-btn" onclick="selectCategory(this,'협의회')">🤝 협의회</button>
+          <button class="category-btn" onclick="selectCategory(this,'기타')">📝 기타</button>
+        </div>
+        <div id="custom-category-wrap" style="display:none;margin-bottom:12px;">
+          <input type="text" class="form-input" id="custom-category" placeholder="유형 직접 입력 (예: 설명회)">
+        </div>
+        <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:var(--gray-700);">공개 범위</div>
         <div class="type-tabs">
-          <button class="tab-btn active" id="tab-internal" onclick="selectTab('internal')">🏫 내부용</button>
-          <button class="tab-btn" id="tab-external" onclick="selectTab('external')">🌐 외부 공개</button>
+          <button class="tab-btn active" id="tab-school" onclick="selectTab('school')">🏫 학교용</button>
+          <button class="tab-btn" id="tab-external" onclick="selectTab('external')">🏛️ 외부공개</button>
         </div>
         <div class="form-row">
-          <input type="text" class="form-input" id="event-name" placeholder="행사명 (예: 3월 교직원 회의)">
-          <input type="text" class="form-input" id="event-location" placeholder="장소">
+          <input type="text" class="form-input" id="training-name" placeholder="행사명 입력">
+          <input type="text" class="form-input" id="training-location" placeholder="장소">
         </div>
         <div class="form-row">
-          <input type="date" class="form-input" id="event-date">
-          <input type="text" class="form-input" id="event-time" placeholder="시간 (예: 15:00~17:00)">
+          <input type="date" class="form-input" id="training-date">
+          <input type="text" class="form-input" id="training-time" placeholder="시간 (예: 15:00~17:00)">
         </div>
-        <label class="checkbox-row">
-          <input type="checkbox" id="event-pw-check" onchange="togglePwInput()">
-          인증 비밀번호 설정
-        </label>
-        <div id="pw-input-wrap" style="display:none; margin-bottom:12px;">
-          <input type="text" class="form-input" id="event-pw" placeholder="비밀번호 입력">
-        </div>
-        <button class="btn-register" onclick="registerEvent()">행사 등록</button>
+        <label class="checkbox-row"><input type="checkbox" id="training-pw-check" onchange="togglePwInput()">인증 비밀번호 설정</label>
+        <div id="pw-input-wrap" style="display:none;margin-bottom:12px;"><input type="text" class="form-input" id="training-pw" placeholder="비밀번호 입력"></div>
+        <button class="btn-register" onclick="registerTraining()">행사 등록</button>
       </div>
-
       <div>
-        <div class="list-header">
-          <div class="list-title">등록된 행사 목록</div>
-          <button class="btn-refresh" onclick="renderEventList()">🔄 새로고침</button>
-        </div>
-        <div id="event-list">
-          <div class="empty-list">등록된 행사가 없습니다.</div>
-        </div>
+        <div class="list-header"><div class="list-title">등록된 행사 목록</div><button class="btn-refresh" onclick="renderTrainingList()">🔄 새로고침</button></div>
+        <div id="training-list"><div class="empty-list">등록된 행사가 없습니다.</div></div>
       </div>
     </div>
 
-    <!-- TAB 2: 구글 시트 연동 -->
+    <!-- TAB 2 -->
     <div id="tab-sheets" class="admin-tab-panel">
       <div class="card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
           <div style="display:flex;align-items:center;gap:12px;">
             <div id="sheets-status-dot" class="gas-status-dot"></div>
-            <div>
-              <div style="font-size:15px;font-weight:800;" id="sheets-status-text">연동 안 됨</div>
-              <div style="font-size:12px;color:var(--gray-400);margin-top:2px;" id="sheets-status-url">웹앱 URL이 설정되지 않았습니다.</div>
-            </div>
+            <div><div style="font-size:15px;font-weight:800;" id="sheets-status-text">연동 안 됨</div><div style="font-size:12px;color:var(--gray-400);margin-top:2px;" id="sheets-status-url">웹앱 URL이 설정되지 않았습니다.</div></div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-sync-now" id="btn-sync-all" onclick="syncAllToSheets()" style="display:none;">
-              ☁️ 전체 데이터 저장
-            </button>
-          </div>
+          <button class="btn-sync-now" id="btn-sync-all" onclick="syncAllToSheets()" style="display:none;">☁️ 전체 데이터 구글 시트에 저장</button>
         </div>
         <div id="sync-result" class="sync-result-box"></div>
       </div>
-
       <div class="gas-setup-card">
         <div class="gas-setup-header" onclick="toggleGasSetup(this)">
-          <div class="gas-setup-header-left">
-            <span style="font-size:22px;">📖</span>
-            <div>
-              <div class="gas-setup-title">구글 앱스 스크립트 연동 설명서</div>
-              <div class="gas-setup-subtitle">처음 설정하시는 분도 10분이면 완료! 클릭해서 펼쳐보세요.</div>
-            </div>
-          </div>
+          <div class="gas-setup-header-left"><span style="font-size:22px;">📖</span><div><div class="gas-setup-title">구글 앱스 스크립트 연동 설명서</div><div class="gas-setup-subtitle">클릭해서 펼쳐보세요</div></div></div>
           <div class="gas-toggle-arrow">▼</div>
         </div>
         <div class="gas-setup-body">
           <div class="setup-steps">
-            <div class="setup-step">
-              <div class="setup-step-left"><div class="setup-step-num">1</div><div class="setup-step-line"></div></div>
-              <div class="setup-step-content">
-                <div class="setup-step-title">구글 스프레드시트 새로 만들기</div>
-                <div class="setup-step-desc">
-                  <a href="https://sheets.google.com" target="_blank" style="color:var(--blue);font-weight:700;">sheets.google.com</a> 에서
-                  <strong>새 스프레드시트</strong>를 만드세요.
-                </div>
-              </div>
-            </div>
-            <div class="setup-step">
-              <div class="setup-step-left"><div class="setup-step-num">2</div><div class="setup-step-line"></div></div>
-              <div class="setup-step-content">
-                <div class="setup-step-title">앱스 스크립트 편집기 열기</div>
-                <div class="setup-step-desc">
-                  상단 메뉴 <strong>확장 프로그램 → Apps Script</strong> 클릭
-                </div>
-              </div>
-            </div>
-            <div class="setup-step">
-              <div class="setup-step-left"><div class="setup-step-num">3</div><div class="setup-step-line"></div></div>
-              <div class="setup-step-content">
-                <div class="setup-step-title">아래 코드를 붙여넣기</div>
-                <div class="setup-step-desc">기존 코드를 <strong>전부 지우고</strong> 아래 코드를 붙여넣으세요.</div>
-                <div class="code-block" id="gas-code-block">
-<button class="btn-copy-code" onclick="copyGasCode()">📋 복사</button><span id="gas-code-display"></span></div>
-              </div>
-            </div>
-            <div class="setup-step">
-              <div class="setup-step-left"><div class="setup-step-num">4</div><div class="setup-step-line"></div></div>
-              <div class="setup-step-content">
-                <div class="setup-step-title">저장 → 배포</div>
-                <div class="setup-step-desc">
-                  ① 💾 <strong>저장(Ctrl+S)</strong><br>
-                  ② <strong>배포 → 새 배포</strong> → ⚙️ → <strong>"웹 앱"</strong> 선택<br>
-                  ③ 다음 사용자로 실행: <strong>나</strong> / 액세스 권한: <span style="color:var(--red);font-weight:700;">모든 사용자</span><br>
-                  ④ <strong>배포</strong> 클릭
-                </div>
-                <div style="background:#FFF3E0;border:1.5px solid #FFB74D;border-radius:12px;padding:16px 18px;margin-top:4px;">
-                  <div style="font-size:13px;font-weight:800;color:#E65100;margin-bottom:10px;">⚠️ 권한 승인 안내</div>
-                  <div style="font-size:12.5px;color:#4E342E;line-height:1.8;">
-                    <strong>A.</strong> "액세스 승인" 클릭<br>
-                    <strong>B.</strong> 구글 계정 선택<br>
-                    <strong>C.</strong> "Google이 확인하지 않은 앱" → <span style="color:#1A73E8;font-weight:700;">"고급"</span> 클릭<br>
-                    <strong>D.</strong> "(앱 이름)(으)로 이동" 클릭<br>
-                    <strong>E.</strong> "허용" 클릭<br>
-                    <strong style="color:#22A06B;">F.</strong> 웹 앱 URL 복사! 📋
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="setup-step">
-              <div class="setup-step-left"><div class="setup-step-num">5</div></div>
-              <div class="setup-step-content">
-                <div class="setup-step-title">URL 붙여넣기 & 연결 확인</div>
-                <div class="setup-url-input-wrap">
-                  <input type="text" class="setup-url-input" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec">
-                  <button class="btn-connect" onclick="testGasConnection()">연결 확인</button>
-                </div>
-                <div id="connection-status" class="connection-status-box"></div>
-              </div>
-            </div>
+            <div class="setup-step"><div class="setup-step-left"><div class="setup-step-num">1</div><div class="setup-step-line"></div></div><div class="setup-step-content"><div class="setup-step-title">구글 스프레드시트 만들기</div><div class="setup-step-desc"><a href="https://sheets.google.com" target="_blank" style="color:var(--blue);font-weight:700;">sheets.google.com</a> → <strong>새 스프레드시트</strong></div></div></div>
+            <div class="setup-step"><div class="setup-step-left"><div class="setup-step-num">2</div><div class="setup-step-line"></div></div><div class="setup-step-content"><div class="setup-step-title">앱스 스크립트 열기</div><div class="setup-step-desc"><strong>확장 프로그램 → Apps Script</strong></div></div></div>
+            <div class="setup-step"><div class="setup-step-left"><div class="setup-step-num">3</div><div class="setup-step-line"></div></div><div class="setup-step-content"><div class="setup-step-title">코드 붙여넣기</div><div class="setup-step-desc">기존 코드 <strong>전부 지우고</strong> 아래 코드 붙여넣기</div><div class="code-block" id="gas-code-block"><button class="btn-copy-code" onclick="copyGasCode()">📋 복사</button><span id="gas-code-display"></span></div></div></div>
+            <div class="setup-step"><div class="setup-step-left"><div class="setup-step-num">4</div><div class="setup-step-line"></div></div><div class="setup-step-content"><div class="setup-step-title">저장 → 배포</div><div class="setup-step-desc">💾 저장 → <strong>배포 → 새 배포</strong> → 웹앱 → 나 / <span style="color:var(--red);font-weight:700;">모든 사용자</span> → 배포</div><div style="background:#FFF3E0;border:1.5px solid #FFB74D;border-radius:12px;padding:16px 18px;margin-top:4px;"><div style="font-size:13px;font-weight:800;color:#E65100;margin-bottom:10px;">⚠️ 권한 승인</div><div style="font-size:12.5px;color:#4E342E;line-height:1.8;">액세스 승인 → 계정 선택 → "고급" → "(앱이름)(으)로 이동" → "허용" → <strong>URL 복사!</strong></div></div></div></div>
+            <div class="setup-step"><div class="setup-step-left"><div class="setup-step-num">5</div></div><div class="setup-step-content"><div class="setup-step-title">URL 붙여넣기 & 연결 확인</div><div class="setup-url-input-wrap"><input type="text" class="setup-url-input" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec"><button class="btn-connect" onclick="testGasConnection()">연결 확인</button></div><div id="connection-status" class="connection-status-box"></div></div></div>
           </div>
         </div>
       </div>
-
-      <div style="background:#FFF8E1;border:1.5px solid #FFE082;border-radius:12px;padding:16px 20px;font-size:13px;color:#5D4037;line-height:1.7;">
-        ⚠️ <strong>코드 수정 시 재배포 필수:</strong>
-        배포 → 배포 관리 → ✏️ 수정 → 버전: 새 버전 → 배포
-      </div>
+      <div style="background:#FFF8E1;border:1.5px solid #FFE082;border-radius:12px;padding:16px 20px;font-size:13px;color:#5D4037;line-height:1.7;">⚠️ <strong>코드 수정 시 재배포 필수:</strong> 배포 → 배포 관리 → ✏️ 수정 → 새 버전 → 배포</div>
     </div>
 
-    <!-- TAB 3: 명단 관리 -->
+    <!-- TAB 3 -->
     <div id="tab-roster" class="admin-tab-panel">
       <div class="card">
-        <div class="card-title">참석자 명단 관리</div>
+        <div class="card-title">교직원 명단 관리</div>
         <div class="roster-info">
-          <div>
-            <div class="roster-count">현재 등록된 인원: <strong id="roster-count-display">0명</strong></div>
-            <div class="roster-note">※ 내부용 행사 시 명단 검증에 활용됩니다. 외부 공개 행사에는 필요하지 않습니다.</div>
-          </div>
+          <div><div class="roster-count">현재: <strong id="roster-count-display">0명</strong></div><div class="roster-note">※ 외부공개 행사에는 명단 검증이 적용되지 않습니다.</div></div>
           <div class="roster-btns">
-            <button class="btn-danger-outline" onclick="resetRoster()">명단 초기화</button>
-            <button class="btn-green-outline" onclick="downloadTemplate()">⬇ 양식 다운로드</button>
-            <button class="btn-blue-outline" onclick="document.getElementById('roster-upload').click()">⬆ 명단 업로드 (CSV)</button>
-            <input type="file" id="roster-upload" accept=".csv,.xlsx,.xls" style="display:none" onchange="uploadRoster(this)">
+            <button class="btn-danger-outline" onclick="resetRoster()">초기화</button>
+            <button class="btn-green-outline" onclick="downloadTemplate()">⬇ 양식</button>
+            <button class="btn-blue-outline" onclick="document.getElementById('roster-upload').click()">⬆ 업로드</button>
+            <input type="file" id="roster-upload" accept=".csv" style="display:none" onchange="uploadRoster(this)">
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ===== USER: EVENT SELECT ===== -->
+<!-- USER SELECT -->
 <div id="screen-user" class="screen">
-  <div class="user-header">
-    <button class="btn-back" onclick="goMain()">← 처음으로</button>
-    <div class="user-title">서명할 행사 선택</div>
-  </div>
-  <div id="user-event-list" style="width:100%;max-width:480px;"></div>
+  <div class="user-header"><button class="btn-back" onclick="goMain()">← 처음으로</button><div class="user-title">서명할 행사 선택</div></div>
+  <div id="user-training-list" style="width:100%;max-width:480px;"></div>
 </div>
 
-<!-- ===== USER: SIGN FORM ===== -->
+<!-- SIGN FORM -->
 <div id="screen-sign-form" class="screen">
   <div class="sign-form-card">
-    <div class="sign-form-training-name" id="sign-form-event-name"></div>
-    <div class="sign-form-training-detail" id="sign-form-event-detail"></div>
+    <div class="sign-form-training-name" id="sign-form-training-name"></div>
+    <div class="sign-form-training-detail" id="sign-form-training-detail"></div>
     <input type="text" class="sign-form-input" id="sign-dept" placeholder="소속 입력">
     <input type="text" class="sign-form-input" id="sign-position" placeholder="직위 입력">
     <input type="text" class="sign-form-input" id="sign-name" placeholder="성명 입력">
@@ -1028,51 +451,31 @@
   </div>
 </div>
 
-<!-- ===== SIGNATURE SCREEN ===== -->
+<!-- SIGNATURE -->
 <div id="screen-signature" class="screen">
   <div class="signature-card">
-    <div class="sig-training-label">서명 대상</div>
-    <div class="sig-training-name" id="sig-event-name-display"></div>
+    <div class="sig-training-label" id="sig-training-label-display">서명 대상</div>
+    <div class="sig-training-name" id="sig-training-name-display"></div>
     <div class="sig-name" id="sig-person-name"></div>
-
-    <div class="sig-mode-tabs">
-      <button class="sig-mode-btn active" id="mode-btn-draw" onclick="setSigMode('draw')">✏️ 직접 서명</button>
-      <button class="sig-mode-btn" id="mode-btn-upload" onclick="setSigMode('upload')">🖼️ 이미지 업로드</button>
-    </div>
-
+    <div class="sig-mode-tabs"><button class="sig-mode-btn active" id="mode-btn-draw" onclick="setSigMode('draw')">✏️ 직접 서명</button><button class="sig-mode-btn" id="mode-btn-upload" onclick="setSigMode('upload')">🖼️ 이미지 업로드</button></div>
     <div id="sig-draw-area">
       <div class="sig-instruction">칸에 맞추어 서명을 크게, 정자로 써주세요.</div>
-      <div class="sig-canvas-wrap">
-        <canvas id="sig-canvas"></canvas>
-      </div>
-      <div class="sig-actions">
-        <button class="btn-sig-clear" onclick="clearCanvas()">다시 쓰기</button>
-        <button class="btn-sig-cancel" onclick="showScreen('screen-sign-form')">취소</button>
-        <button class="btn-sig-done" onclick="completeSignature()">서명 완료</button>
-      </div>
+      <div class="sig-canvas-wrap"><canvas id="sig-canvas"></canvas></div>
+      <div class="sig-actions"><button class="btn-sig-clear" onclick="clearCanvas()">다시 쓰기</button><button class="btn-sig-cancel" onclick="showScreen('screen-sign-form')">취소</button><button class="btn-sig-done" onclick="completeSignature()">서명 완료</button></div>
     </div>
-
     <div id="sig-upload-area" style="display:none;">
-      <div class="sig-instruction">서명 이미지 파일을 업로드하세요.</div>
-      <div class="sig-upload-wrap" id="sig-upload-wrap" onclick="document.getElementById('sig-upload-input').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
-        <img id="sig-upload-preview" src="" alt="미리보기">
-        <div id="sig-upload-placeholder">
-          <div class="sig-upload-icon">📁</div>
-          <div class="sig-upload-label">클릭하거나 파일을 드래그하세요</div>
-          <div class="sig-upload-sub">PNG · JPG · GIF · WEBP</div>
-        </div>
-        <button class="sig-upload-change" id="sig-upload-change-btn" onclick="event.stopPropagation(); document.getElementById('sig-upload-input').click()">변경</button>
+      <div class="sig-instruction">서명 이미지를 업로드하세요.</div>
+      <div class="sig-upload-wrap" id="sig-upload-wrap" onclick="document.getElementById('sig-upload-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault();this.classList.remove('dragover');const f=event.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadUploadedImage(f)">
+        <img id="sig-upload-preview" src="" alt=""><div id="sig-upload-placeholder"><div class="sig-upload-icon">📁</div><div class="sig-upload-label">클릭하거나 드래그</div><div class="sig-upload-sub">PNG · JPG · GIF · WEBP</div></div>
+        <button class="sig-upload-change" id="sig-upload-change-btn" onclick="event.stopPropagation();document.getElementById('sig-upload-input').click()">변경</button>
       </div>
-      <input type="file" id="sig-upload-input" accept="image/*" onchange="onUploadFile(this)">
-      <div class="sig-actions">
-        <button class="btn-sig-cancel" onclick="showScreen('screen-sign-form')">취소</button>
-        <button class="btn-sig-done" onclick="completeSignature()">서명 완료</button>
-      </div>
+      <input type="file" id="sig-upload-input" accept="image/*" onchange="if(this.files[0])loadUploadedImage(this.files[0])">
+      <div class="sig-actions"><button class="btn-sig-cancel" onclick="showScreen('screen-sign-form')">취소</button><button class="btn-sig-done" onclick="completeSignature()">서명 완료</button></div>
     </div>
   </div>
 </div>
 
-<!-- ===== SUCCESS ===== -->
+<!-- SUCCESS -->
 <div id="screen-success" class="screen">
   <div class="success-icon">✅</div>
   <div class="success-title">서명이 완료되었습니다!</div>
@@ -1080,13 +483,13 @@
   <button class="btn-back-main" onclick="goMain()">처음으로 돌아가기</button>
 </div>
 
-<!-- ===== RESULT MODAL ===== -->
+<!-- RESULT MODAL -->
 <div id="modal-result" class="modal-overlay">
-  <div class="modal" style="max-width:760px; max-height:90vh; overflow-y:auto;">
+  <div class="modal" style="max-width:760px;max-height:90vh;overflow-y:auto;">
     <div class="modal-title" id="result-modal-title">서명 결과</div>
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
       <button class="result-type-btn active" id="rtype-all" onclick="setResultType('all')">📋 전체</button>
-      <button class="result-type-btn" id="rtype-teacher" onclick="setResultType('teacher')">🎓 교원만 (교장·교감·교사)</button>
+      <button class="result-type-btn" id="rtype-teacher" onclick="setResultType('teacher')">🎓 교원</button>
     </div>
     <div id="result-modal-content"></div>
     <div class="modal-btns" style="margin-top:16px;flex-wrap:wrap;gap:8px;">
@@ -1096,7 +499,6 @@
   </div>
 </div>
 
-<!-- Hidden print areas -->
 <div id="pdf-print-area"></div>
 <div id="qr-print-area"></div>
 
@@ -1105,27 +507,10 @@
   <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto;">
     <div class="modal-title" id="qr-modal-title">🔗 링크 & QR 코드</div>
     <div class="qr-modal-body">
-      <div class="qr-section">
-        <div class="qr-section-title">📤 배포용 링크 & QR</div>
-        <div class="qr-url-box" id="qr-share-url">—</div>
-        <div class="qr-canvas-wrap"><canvas id="qr-canvas-small"></canvas></div>
-        <div class="qr-actions">
-          <button class="btn-sm-secondary" onclick="copyShareUrl()">🔗 링크 복사</button>
-          <button class="btn-sm-primary" onclick="downloadQrImage()">⬇ QR 이미지 저장</button>
-        </div>
-      </div>
-      <div class="qr-section">
-        <div class="qr-section-title">🖨️ 장소 부착용 QR 포스터</div>
-        <div style="font-size:13px;color:var(--gray-500);margin-bottom:12px;line-height:1.6;">
-          A4에 인쇄하여 부착하세요. <strong>"QR코드를 찍어 등록부에 서명해주세요"</strong> 문구가 포함됩니다.
-        </div>
-        <div class="qr-canvas-wrap"><canvas id="qr-canvas-large"></canvas></div>
-        <button class="btn-sm-primary" style="width:100%;margin-top:4px;" onclick="printQrPoster()">🖨️ QR 포스터 인쇄</button>
-      </div>
+      <div class="qr-section"><div class="qr-section-title">📤 배포용 링크 & QR</div><div class="qr-url-box" id="qr-share-url">—</div><div class="qr-canvas-wrap"><canvas id="qr-canvas-small"></canvas></div><div class="qr-actions"><button class="btn-sm-secondary" onclick="copyShareUrl()">🔗 링크 복사</button><button class="btn-sm-primary" onclick="downloadQrImage()">⬇ QR 저장</button></div></div>
+      <div class="qr-section"><div class="qr-section-title">🖨️ QR 포스터 출력</div><div class="qr-canvas-wrap"><canvas id="qr-canvas-large"></canvas></div><button class="btn-sm-primary" style="width:100%;margin-top:4px;" onclick="printQrPoster()">🖨️ 포스터 인쇄</button></div>
     </div>
-    <div class="modal-btns" style="margin-top:16px;">
-      <button class="btn-sm-secondary" onclick="closeModal('modal-qr')">닫기</button>
-    </div>
+    <div class="modal-btns" style="margin-top:16px;"><button class="btn-sm-secondary" onclick="closeModal('modal-qr')">닫기</button></div>
   </div>
 </div>
 
@@ -1133,705 +518,343 @@
 
 <script>
 // ===== STATE =====
-let state = {
-  events: [],
-  roster: [],
-  currentEvent: null,
-  currentPerson: null,
-  adminPw: '1234',
-  eventType: 'internal',
-  gasUrl: ''
-};
+let state = { trainings:[], roster:[], currentTraining:null, currentPerson:null, adminPw:'1234', trainingType:'school', category:'연수', gasUrl:'' };
+const CAT_ICONS = {'연수':'📖','회의':'🗣️','위원회':'🏛️','협의회':'🤝','기타':'📝'};
+function catIcon(c){return CAT_ICONS[c]||'📋'}
 
-function loadState() {
-  try {
-    const saved = localStorage.getItem('signApp');
-    if (saved) {
-      const p = JSON.parse(saved);
-      state.events = p.events || p.trainings || [];
-      state.roster = p.roster || [];
-      state.adminPw = p.adminPw || '1234';
-      state.gasUrl = p.gasUrl || '';
-    }
-  } catch(e) {}
-}
-
-function saveState() {
-  try {
-    localStorage.setItem('signApp', JSON.stringify({
-      events: state.events,
-      roster: state.roster,
-      adminPw: state.adminPw,
-      gasUrl: state.gasUrl
-    }));
-  } catch(e) {}
-}
-
+function loadState(){try{const s=localStorage.getItem('trainingApp');if(s){const p=JSON.parse(s);state.trainings=p.trainings||[];state.roster=p.roster||[];state.adminPw=p.adminPw||'1234';state.gasUrl=p.gasUrl||'';}}catch(e){}}
+function saveState(){try{localStorage.setItem('trainingApp',JSON.stringify({trainings:state.trainings,roster:state.roster,adminPw:state.adminPw,gasUrl:state.gasUrl}))}catch(e){}}
 loadState();
 
-// ===== NAV =====
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+// NAV
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function goMain(){if(window.location.search)window.history.replaceState({},'',window.location.pathname);showScreen('screen-main');closeModal('modal-admin-login')}
+function openModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+// LOADING
+function showLoading(msg){const d=document.createElement('div');d.id='loading-overlay';d.className='loading-overlay';d.innerHTML=`<div class="spinner"></div><div class="loading-text">${msg||'로딩 중...'}</div>`;document.body.appendChild(d)}
+function hideLoading(){const d=document.getElementById('loading-overlay');if(d)d.remove()}
+
+// ADMIN
+function showAdminLogin(){document.getElementById('admin-pw-input').value='';openModal('modal-admin-login');setTimeout(()=>document.getElementById('admin-pw-input').focus(),100)}
+function adminLogin(){
+  if(document.getElementById('admin-pw-input').value===state.adminPw){
+    closeModal('modal-admin-login');showScreen('screen-admin');
+    renderTrainingList();updateRosterCount();updateSheetsStatusUI();
+    // 동기화 안내 배너
+    document.getElementById('sync-banner').classList.toggle('show',!state.gasUrl);
+  } else {toast('비밀번호가 올바르지 않습니다.');document.getElementById('admin-pw-input').value='';document.getElementById('admin-pw-input').focus();}
+}
+function updateRosterCount(){document.getElementById('roster-count-display').textContent=state.roster.length+'명'}
+function resetRoster(){if(confirm('명단을 초기화하시겠습니까?')){state.roster=[];saveState();updateRosterCount();toast('초기화 완료')}}
+function downloadTemplate(){const b=new Blob(['\uFEFF소속,직위,성명\n예)교무부,교사,홍길동\n'],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='교직원명단_양식.csv';a.click()}
+function uploadRoster(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){const lines=e.target.result.split('\n').filter(l=>l.trim());const roster=[];for(let i=1;i<lines.length;i++){const c=lines[i].split(',');if(c[2]&&c[2].trim())roster.push({dept:(c[0]||'').trim(),position:(c[1]||'').trim(),name:c[2].trim()})}state.roster=roster;saveState();updateRosterCount();toast(roster.length+'명 업로드 완료!')};r.readAsText(f,'utf-8');input.value=''}
+
+// CATEGORY & TAB
+function selectCategory(btn,cat){state.category=cat;document.querySelectorAll('#category-tabs .category-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('custom-category-wrap').style.display=cat==='기타'?'block':'none'}
+function getSelectedCategory(){return state.category==='기타'?(document.getElementById('custom-category').value.trim()||'기타'):state.category}
+function selectTab(type){state.trainingType=type;document.getElementById('tab-school').classList.toggle('active',type==='school');document.getElementById('tab-external').classList.toggle('active',type==='external')}
+function togglePwInput(){document.getElementById('pw-input-wrap').style.display=document.getElementById('training-pw-check').checked?'block':'none'}
+
+// REGISTER
+function registerTraining(){
+  const name=document.getElementById('training-name').value.trim();
+  const loc=document.getElementById('training-location').value.trim();
+  const date=document.getElementById('training-date').value;
+  const time=document.getElementById('training-time').value.trim();
+  const pw=document.getElementById('training-pw-check').checked?document.getElementById('training-pw').value.trim():null;
+  const cat=getSelectedCategory();
+  if(!name){toast('행사명을 입력해주세요.');return}
+  if(!date){toast('날짜를 입력해주세요.');return}
+  state.trainings.unshift({id:Date.now().toString(),name,location:loc,date,time,type:state.trainingType,category:cat,password:pw,signatures:[]});
+  saveState();renderTrainingList();
+  document.getElementById('training-name').value='';document.getElementById('training-location').value='';document.getElementById('training-date').value='';document.getElementById('training-time').value='';document.getElementById('training-pw-check').checked=false;document.getElementById('pw-input-wrap').style.display='none';document.getElementById('training-pw').value='';
+  toast(cat+' 등록 완료!');
 }
 
-function goMain() {
-  if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
-  showScreen('screen-main');
-  closeModal('modal-admin-login');
-}
-
-function openModal(id) { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ===== ADMIN =====
-function showAdminLogin() {
-  document.getElementById('admin-pw-input').value = '';
-  openModal('modal-admin-login');
-  setTimeout(() => document.getElementById('admin-pw-input').focus(), 100);
-}
-
-function adminLogin() {
-  if (document.getElementById('admin-pw-input').value === state.adminPw) {
-    closeModal('modal-admin-login');
-    showScreen('screen-admin');
-    renderEventList();
-    updateRosterCount();
-    updateSheetsStatusUI();
-  } else {
-    toast('비밀번호가 올바르지 않습니다.');
-    document.getElementById('admin-pw-input').value = '';
-    document.getElementById('admin-pw-input').focus();
-  }
-}
-
-function updateRosterCount() {
-  document.getElementById('roster-count-display').textContent = state.roster.length + '명';
-}
-
-function resetRoster() {
-  if (confirm('명단을 초기화하시겠습니까?')) {
-    state.roster = []; saveState(); updateRosterCount();
-    toast('명단이 초기화되었습니다.');
-  }
-}
-
-function downloadTemplate() {
-  const csv = '소속,직위,성명\n예)교무부,교사,홍길동\n';
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = '참석자명단_양식.csv'; a.click();
-}
-
-function uploadRoster(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const lines = e.target.result.split('\n').filter(l => l.trim());
-    const roster = [];
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(',');
-      if (cols[2] && cols[2].trim()) {
-        roster.push({ dept: (cols[0]||'').trim(), position: (cols[1]||'').trim(), name: cols[2].trim() });
-      }
-    }
-    state.roster = roster; saveState(); updateRosterCount();
-    toast(roster.length + '명 업로드 완료!');
-  };
-  reader.readAsText(file, 'utf-8'); input.value = '';
-}
-
-// ===== EVENT REGISTRATION =====
-function selectTab(type) {
-  state.eventType = type;
-  document.getElementById('tab-internal').classList.toggle('active', type === 'internal');
-  document.getElementById('tab-external').classList.toggle('active', type === 'external');
-}
-
-function togglePwInput() {
-  document.getElementById('pw-input-wrap').style.display =
-    document.getElementById('event-pw-check').checked ? 'block' : 'none';
-}
-
-function registerEvent() {
-  const name = document.getElementById('event-name').value.trim();
-  const location = document.getElementById('event-location').value.trim();
-  const date = document.getElementById('event-date').value;
-  const time = document.getElementById('event-time').value.trim();
-  const pwEnabled = document.getElementById('event-pw-check').checked;
-  const pw = document.getElementById('event-pw').value.trim();
-
-  if (!name) { toast('행사명을 입력해주세요.'); return; }
-  if (!date) { toast('날짜를 입력해주세요.'); return; }
-
-  state.events.unshift({
-    id: Date.now().toString(),
-    name, location, date, time,
-    type: state.eventType,
-    password: pwEnabled ? pw : null,
-    signatures: []
-  });
-  saveState(); renderEventList();
-
-  document.getElementById('event-name').value = '';
-  document.getElementById('event-location').value = '';
-  document.getElementById('event-date').value = '';
-  document.getElementById('event-time').value = '';
-  document.getElementById('event-pw-check').checked = false;
-  document.getElementById('pw-input-wrap').style.display = 'none';
-  document.getElementById('event-pw').value = '';
-
-  toast('행사가 등록되었습니다!');
-}
-
-function renderEventList() {
-  const c = document.getElementById('event-list');
-  if (state.events.length === 0) {
-    c.innerHTML = '<div class="empty-list">등록된 행사가 없습니다.</div>'; return;
-  }
-  c.innerHTML = state.events.map(t => `
+function renderTrainingList(){
+  const c=document.getElementById('training-list');
+  if(!state.trainings.length){c.innerHTML='<div class="empty-list">등록된 행사가 없습니다.</div>';return}
+  c.innerHTML=state.trainings.map(t=>{const cat=t.category||'연수';return `
     <div class="training-item">
       <div class="training-info">
         <div class="training-badges">
-          <span class="badge ${t.type === 'external' ? 'badge-external' : 'badge-internal'}">${t.type === 'external' ? '외부' : '내부'}</span>
-          <span class="training-name">${escHtml(t.name)}</span>
+          <span class="badge badge-category">${catIcon(cat)} ${esc(cat)}</span>
+          <span class="badge ${t.type==='external'?'badge-external':'badge-internal'}">${t.type==='external'?'외부':'학교'}</span>
+          <span class="training-name">${esc(t.name)}</span>
         </div>
         <div class="training-meta">
           <span>📅 ${t.date}</span>
-          ${t.location ? `<span>📍 ${escHtml(t.location)}</span>` : ''}
-          <span class="signature-count">✍️ ${t.signatures.length}명 서명</span>
+          ${t.location?`<span>📍 ${esc(t.location)}</span>`:''}
+          <span class="signature-count">✍️ ${t.signatures.length}명</span>
         </div>
       </div>
       <div class="training-actions">
+        ${state.gasUrl?`<button class="btn-action btn-action-sync" onclick="fetchFromSheets('${t.id}')">🔄 시트에서 불러오기</button>`:''}
         <button class="btn-action btn-action-green" onclick="shareLink('${t.id}')">QR/링크</button>
-        ${state.gasUrl ? `<button class="btn-action" style="border-color:#22A06B;color:#22A06B;" onclick="syncSingleToSheets('${t.id}')">☁️ 시트</button>` : ''}
         <button class="btn-action btn-action-blue" onclick="showResult('${t.id}')">결과</button>
-        <button class="btn-action btn-action-red" onclick="deleteEvent('${t.id}')">삭제</button>
+        <button class="btn-action btn-action-red" onclick="deleteTraining('${t.id}')">삭제</button>
       </div>
-    </div>
-  `).join('');
+    </div>`}).join('');
+}
+function deleteTraining(id){if(confirm('삭제하시겠습니까?')){state.trainings=state.trainings.filter(t=>t.id!==id);saveState();renderTrainingList();toast('삭제 완료')}}
+
+// ★★★ 핵심: 구글 시트에서 서명 불러오기 ★★★
+async function fetchFromSheets(id){
+  const t=state.trainings.find(x=>x.id===id);if(!t)return;
+  if(!state.gasUrl){toast('먼저 구글 시트를 연동해주세요.');return}
+  showLoading('구글 시트에서 서명 불러오는 중...');
+  try{
+    const cat=t.category||'연수';
+    const sheetName=encodeURIComponent((t.date+'_'+cat+'_'+t.name).substring(0,40));
+    const url=state.gasUrl+'?action=getSignatures&sheet='+sheetName;
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.success && data.signatures && data.signatures.length>0){
+      // 기존 로컬 서명과 병합 (이름+소속 기준 중복 제거, 시트 데이터 우선)
+      const merged=new Map();
+      // 로컬 데이터 먼저
+      t.signatures.forEach(s=>merged.set(s.name+'|'+s.dept,s));
+      // 시트 데이터로 덮어쓰기/추가
+      data.signatures.forEach(s=>{
+        merged.set(s.name+'|'+s.dept,{
+          dept:s.dept||'',position:s.position||'',name:s.name||'',
+          signatureImg:s.imageUrl||'',time:s.time||'',
+          fromSheet:true
+        });
+      });
+      t.signatures=Array.from(merged.values());
+      saveState();renderTrainingList();
+      toast(`✅ ${data.signatures.length}명의 서명을 불러왔습니다!`);
+    } else {
+      toast('시트에 서명 데이터가 없습니다.');
+    }
+  }catch(err){
+    console.error(err);
+    toast('❌ 불러오기 실패: '+err.message);
+  }finally{hideLoading()}
 }
 
-function deleteEvent(id) {
-  if (confirm('정말 삭제하시겠습니까?')) {
-    state.events = state.events.filter(t => t.id !== id);
-    saveState(); renderEventList(); toast('삭제되었습니다.');
-  }
-}
+// URL ENCODE/DECODE
+function encodeForUrl(t){const d={id:t.id,n:t.name,l:t.location,d:t.date,tm:t.time,tp:t.type,c:t.category||'연수',pw:t.password,g:state.gasUrl||''};const b=btoa(unescape(encodeURIComponent(JSON.stringify(d))));return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function decodeFromUrl(enc){try{let b=enc.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';const d=JSON.parse(decodeURIComponent(escape(atob(b))));return{id:d.id||Date.now().toString(),name:d.n||'',location:d.l||'',date:d.d||'',time:d.tm||'',type:d.tp||'school',category:d.c||'연수',password:d.pw||null,gasUrl:d.g||'',signatures:[]}}catch(e){return null}}
+function buildShareUrl(t){return window.location.href.split('?')[0].split('#')[0]+'?d='+encodeForUrl(t)}
 
-// ===== URL ENCODE/DECODE =====
-function encodeEventForUrl(t) {
-  const data = { id:t.id, n:t.name, l:t.location, d:t.date, tm:t.time, tp:t.type, pw:t.password };
-  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function decodeEventFromUrl(encoded) {
-  try {
-    let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    while (b64.length % 4) b64 += '=';
-    const data = JSON.parse(decodeURIComponent(escape(atob(b64))));
-    return {
-      id: data.id || Date.now().toString(),
-      name: data.n || '(알 수 없음)',
-      location: data.l || '', date: data.d || '', time: data.tm || '',
-      type: data.tp || 'internal', password: data.pw || null, signatures: []
-    };
-  } catch(e) { return null; }
-}
-
-function buildShareUrl(t) {
-  return window.location.href.split('?')[0].split('#')[0] + '?d=' + encodeEventForUrl(t);
-}
-
-// ===== QR & SHARE =====
-let _qrEventId = null;
-
-function shareLink(id) {
-  const t = state.events.find(x => x.id === id);
-  if (!t) return;
-  _qrEventId = id;
-  const shareUrl = buildShareUrl(t);
-
-  document.getElementById('qr-modal-title').textContent = `🔗 「${t.name}」 링크 & QR`;
-  document.getElementById('qr-share-url').textContent = shareUrl;
-
-  const sw = document.getElementById('qr-canvas-small');
-  const lw = document.getElementById('qr-canvas-large');
-  sw.innerHTML = ''; lw.innerHTML = '';
-
-  try {
-    new QRCode(sw, { text: shareUrl, width: 180, height: 180, colorDark:'#0F172A', correctLevel: QRCode.CorrectLevel.M });
-    new QRCode(lw, { text: shareUrl, width: 260, height: 260, colorDark:'#0F172A', correctLevel: QRCode.CorrectLevel.M });
-  } catch(e) {
-    sw.innerHTML = '<div style="padding:20px;color:#E84444;font-size:13px;">QR 생성 실패</div>';
-  }
+// QR & SHARE
+let _qrId=null;
+function shareLink(id){
+  const t=state.trainings.find(x=>x.id===id);if(!t)return;_qrId=id;
+  const url=buildShareUrl(t);
+  document.getElementById('qr-modal-title').textContent=`🔗 「${t.name}」`;
+  document.getElementById('qr-share-url').textContent=url;
+  const sw=document.getElementById('qr-canvas-small'),lw=document.getElementById('qr-canvas-large');
+  sw.innerHTML='';lw.innerHTML='';
+  try{new QRCode(sw,{text:url,width:180,height:180,colorDark:'#0F172A',correctLevel:QRCode.CorrectLevel.M});new QRCode(lw,{text:url,width:260,height:260,colorDark:'#0F172A',correctLevel:QRCode.CorrectLevel.M})}catch(e){sw.innerHTML='<div style="padding:20px;color:#E84444;">QR 생성 실패</div>'}
   openModal('modal-qr');
 }
-
-function copyShareUrl() {
-  const url = document.getElementById('qr-share-url').textContent;
-  navigator.clipboard.writeText(url).then(() => toast('링크가 복사되었습니다!')).catch(() => {
-    const ta = document.createElement('textarea'); ta.value = url;
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); toast('링크가 복사되었습니다!');
-  });
-}
-
-function downloadQrImage() {
-  const canvas = document.querySelector('#qr-canvas-small canvas');
-  if (!canvas) return;
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png'); a.download = 'QR코드.png'; a.click();
-  toast('QR 이미지 저장!');
-}
-
-function printQrPoster() {
-  const t = state.events.find(x => x.id === _qrEventId);
-  if (!t) return;
-  const canvas = document.querySelector('#qr-canvas-large canvas');
-  const qrImg = canvas ? canvas.toDataURL('image/png') : '';
-  const pa = document.getElementById('qr-print-area');
-  pa.innerHTML = `
-    <div class="qr-poster">
-      <div class="qr-poster-title">「${escHtml(t.name)}」</div>
-      <div class="qr-poster-date">${t.date||''}${t.time?' | '+t.time:''}${t.location?' | '+t.location:''}</div>
-      <div class="qr-poster-instruction">📱 QR코드를 찍어<br>등록부에 서명해주세요.</div>
-      <div class="qr-poster-qr">${qrImg?`<img src="${qrImg}" style="width:300px;height:300px;">`:''}</div>
-      <div class="qr-poster-footer">서명 후 완료 버튼을 눌러주세요.</div>
-    </div>`;
+function copyShareUrl(){const u=document.getElementById('qr-share-url').textContent;navigator.clipboard.writeText(u).then(()=>toast('링크 복사됨!')).catch(()=>{const ta=document.createElement('textarea');ta.value=u;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('링크 복사됨!')})}
+function downloadQrImage(){const c=document.querySelector('#qr-canvas-small canvas');if(!c)return;const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='QR코드.png';a.click();toast('QR 저장!')}
+function printQrPoster(){
+  const t=state.trainings.find(x=>x.id===_qrId);if(!t)return;
+  const c=document.querySelector('#qr-canvas-large canvas');const qi=c?c.toDataURL('image/png'):'';const cat=t.category||'연수';
+  const pa=document.getElementById('qr-print-area');
+  pa.innerHTML=`<div class="qr-poster"><div class="qr-poster-title">「${esc(t.name)}」 ${esc(cat)} 등록부</div><div class="qr-poster-date">${t.date}${t.time?' | '+t.time:''}${t.location?' | '+t.location:''}</div><div class="qr-poster-instruction">📱 QR코드를 찍어<br>등록부에 서명해주세요.</div><div class="qr-poster-qr">${qi?`<img src="${qi}" style="width:300px;height:300px;">`:''}</div><div class="qr-poster-footer">서명 후 완료 버튼을 눌러주세요.</div></div>`;
   pa.classList.add('printing');
-  const style = document.createElement('style'); style.id = 'qr-po';
-  style.textContent = '@media print{body>*{display:none!important}#qr-print-area{display:block!important}#pdf-print-area{display:none!important}}';
-  document.head.appendChild(style);
-  setTimeout(() => { window.print(); setTimeout(() => { pa.innerHTML=''; pa.classList.remove('printing'); const s=document.getElementById('qr-po'); if(s)s.remove(); }, 1000); }, 200);
+  setTimeout(()=>{window.print();setTimeout(()=>{pa.innerHTML='';pa.classList.remove('printing')},1000)},300);
 }
 
-// ===== RESULT =====
-const POSITION_ORDER = ['교장','교감','행정실장','교사','주무관','영양사','조리사','강사'];
-const TEACHER_POSITIONS = new Set(['교장','교감','교사']);
+// RESULT
+const POS_ORDER=['교장','교감','행정실장','교사','주무관','영양사','조리사','강사'];
+const TEACHER_POS=new Set(['교장','교감','교사']);
+function posIdx(p){const i=POS_ORDER.indexOf((p||'').trim());return i>=0?i:999}
+function sortSigs(s){return[...s].sort((a,b)=>{const d=posIdx(a.position)-posIdx(b.position);return d!==0?d:(a.name||'').localeCompare(b.name||'','ko')})}
 
-function getPositionIndex(pos) {
-  const idx = POSITION_ORDER.indexOf((pos||'').trim());
-  return idx >= 0 ? idx : 999;
-}
-
-function sortSignatures(sigs) {
-  return [...sigs].sort((a,b) => {
-    const d = getPositionIndex(a.position) - getPositionIndex(b.position);
-    return d !== 0 ? d : (a.name||'').localeCompare(b.name||'','ko');
-  });
-}
-
-let _currentResultId = null, _currentResultType = 'all';
-
-function setResultType(type) {
-  _currentResultType = type;
-  document.getElementById('rtype-all').classList.toggle('active', type==='all');
-  document.getElementById('rtype-teacher').classList.toggle('active', type==='teacher');
-  if (_currentResultId) renderResultContent(_currentResultId, type);
-}
-
-function showResult(id) {
-  _currentResultId = id; _currentResultType = 'all';
+let _resId=null,_resType='all';
+function setResultType(type){_resType=type;document.getElementById('rtype-all').classList.toggle('active',type==='all');document.getElementById('rtype-teacher').classList.toggle('active',type==='teacher');if(_resId)renderResultContent(_resId,type)}
+function showResult(id){
+  _resId=id;_resType='all';
   document.getElementById('rtype-all').classList.add('active');
   document.getElementById('rtype-teacher').classList.remove('active');
-  const t = state.events.find(x => x.id === id); if (!t) return;
-  document.getElementById('result-modal-title').textContent = `「${t.name}」 등록부`;
-  renderResultContent(id, 'all');
-  openModal('modal-result');
+  const t=state.trainings.find(x=>x.id===id);if(!t)return;
+  const cat=t.category||'연수';
+  document.getElementById('result-modal-title').textContent=`「${t.name}」 ${cat} 등록부`;
+  renderResultContent(id,'all');openModal('modal-result');
 }
-
-function renderResultContent(id, type) {
-  const t = state.events.find(x => x.id === id); if (!t) return;
-  const c = document.getElementById('result-modal-content');
-  if (t.signatures.length === 0) {
-    c.innerHTML = '<div style="text-align:center;padding:32px;color:#94A3B8;">아직 서명한 사람이 없습니다.</div>'; return;
-  }
-  const sorted = sortSignatures(t.signatures);
-  const filtered = type === 'teacher' ? sorted.filter(s => TEACHER_POSITIONS.has((s.position||'').trim())) : sorted;
-  c.innerHTML = buildFormHTML(t, filtered, false);
+function renderResultContent(id,type){
+  const t=state.trainings.find(x=>x.id===id);if(!t)return;
+  const c=document.getElementById('result-modal-content');
+  if(!t.signatures.length){c.innerHTML='<div style="text-align:center;padding:32px;color:#94A3B8;">아직 서명이 없습니다.'+(state.gasUrl?'<br><br><strong style="color:var(--blue);">🔄 시트에서 불러오기 버튼을 눌러보세요.</strong>':'<br><br><span style="color:#E65100;">구글 시트를 연동하면 모바일 서명을 불러올 수 있습니다.</span>')+'</div>';return}
+  const sorted=sortSigs(t.signatures);
+  const filtered=type==='teacher'?sorted.filter(s=>TEACHER_POS.has((s.position||'').trim())):sorted;
+  c.innerHTML=buildFormHTML(t,filtered,false);
 }
-
-function buildFormHTML(t, sigs, forPrint) {
-  const dateStr = t.date || '';
-  const timeStr = t.time ? ` | ${t.time}` : '';
-  const locStr = t.location ? ` | 장소: ${t.location}` : '';
-  const rows = sigs.map((s,i) => `<tr>
-    <td class="td-num">${i+1}</td>
-    <td class="td-dept">${escHtml(s.dept)}</td>
-    <td class="td-pos">${escHtml(s.position)}</td>
-    <td class="td-name">${escHtml(s.name)}</td>
-    <td class="td-sig">${s.signatureImg?`<img class="sig-cell-img" src="${s.signatureImg}">`:''}</td>
-    <td class="td-remark"></td>
-  </tr>`).join('');
-
+function buildFormHTML(t,sigs,forPrint){
+  const cat=t.category||'연수';
+  const rows=sigs.map((s,i)=>`<tr><td class="td-num">${i+1}</td><td class="td-dept">${esc(s.dept)}</td><td class="td-pos">${esc(s.position)}</td><td class="td-name">${esc(s.name)}</td><td class="td-sig">${s.signatureImg?`<img class="sig-cell-img" src="${s.signatureImg}" alt="서명">`:(s.fromSheet?'<span style="font-size:11px;color:#94A3B8;">시트 저장됨</span>':'')}</td><td class="td-remark"></td></tr>`).join('');
   return `<div class="reg-form-wrap" ${forPrint?'style="padding:10mm 14mm;"':''}>
-    <div class="reg-form-title">「${escHtml(t.name)}」 등록부</div>
-    <div class="reg-form-meta">일시: ${dateStr}${timeStr}${locStr}</div>
-    <table class="reg-form-table">
-      <thead><tr>
-        <th class="td-num">번호</th><th class="td-dept">소속</th><th class="td-pos">직위</th>
-        <th class="td-name">이름</th><th class="td-sig">서&nbsp;&nbsp;&nbsp;명</th><th class="td-remark">비고</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    ${forPrint?`<div class="reg-form-footer">출력일: ${new Date().toLocaleDateString('ko-KR')}</div>`:''}
-  </div>`;
+    <div class="reg-form-title">「${esc(t.name)}」 ${esc(cat)} 등록부</div>
+    <div class="reg-form-meta">일시: ${t.date}${t.time?' | '+t.time:''}${t.location?' | 장소: '+esc(t.location):''}</div>
+    <table class="reg-form-table"><thead><tr><th class="td-num">번호</th><th class="td-dept">소속</th><th class="td-pos">직위</th><th class="td-name">이름</th><th class="td-sig">서&nbsp;&nbsp;&nbsp;명</th><th class="td-remark">비고</th></tr></thead><tbody>${rows}</tbody></table>
+    ${forPrint?`<div class="reg-form-footer">출력일: ${new Date().toLocaleDateString('ko-KR')}</div>`:''}</div>`;
 }
 
-function downloadPDF() {
-  const t = state.events.find(x => x.id === _currentResultId); if (!t) return;
-  const sorted = sortSignatures(t.signatures);
-  const filtered = _currentResultType === 'teacher' ? sorted.filter(s => TEACHER_POSITIONS.has((s.position||'').trim())) : sorted;
-  const pa = document.getElementById('pdf-print-area');
-  pa.innerHTML = buildFormHTML(t, filtered, true);
-  setTimeout(() => { window.print(); setTimeout(() => pa.innerHTML='', 1000); }, 150);
-}
+// ★★★ PDF 다운로드 수정 ★★★
+function downloadPDF(){
+  const t=state.trainings.find(x=>x.id===_resId);if(!t)return;
+  if(!t.signatures.length){toast('서명 데이터가 없습니다.');return}
+  const sorted=sortSigs(t.signatures);
+  const filtered=_resType==='teacher'?sorted.filter(s=>TEACHER_POS.has((s.position||'').trim())):sorted;
+  const pa=document.getElementById('pdf-print-area');
+  pa.innerHTML=buildFormHTML(t,filtered,true);
+  pa.style.display='block';
 
-// ===== USER FLOW =====
-function showUserFlow() {
-  const c = document.getElementById('user-event-list');
-  if (state.events.length === 0) {
-    c.innerHTML = '<div style="text-align:center;padding:40px;color:#94A3B8;">등록된 행사가 없습니다.<br>관리자에게 문의하세요.</div>';
-  } else {
-    c.innerHTML = state.events.map(t => `
-      <div class="training-select-card" onclick="selectEvent('${t.id}')">
-        <div class="training-select-date">${t.date}${t.time?' | '+t.time:''}</div>
-        <div class="training-select-name">${escHtml(t.name)}</div>
-        ${t.location?`<div class="training-select-location">📍 ${escHtml(t.location)}</div>`:''}
-      </div>`).join('');
+  // 이미지 로딩 대기 후 인쇄
+  const imgs=pa.querySelectorAll('img');
+  let loaded=0;const total=imgs.length;
+  function tryPrint(){
+    setTimeout(()=>{
+      window.print();
+      setTimeout(()=>{pa.innerHTML='';pa.style.display='none'},1500);
+    },300);
   }
+  if(total===0){tryPrint();return}
+  imgs.forEach(img=>{
+    if(img.complete){loaded++;if(loaded>=total)tryPrint()}
+    else{img.onload=img.onerror=()=>{loaded++;if(loaded>=total)tryPrint()}}
+  });
+  // 안전장치: 5초 후 강제 인쇄
+  setTimeout(()=>{if(loaded<total)tryPrint()},5000);
+}
+
+// USER FLOW
+function showUserFlow(){
+  const c=document.getElementById('user-training-list');
+  if(!state.trainings.length){c.innerHTML='<div style="text-align:center;padding:40px;color:#94A3B8;">등록된 행사가 없습니다.<br>관리자에게 문의하세요.</div>'}
+  else{c.innerHTML=state.trainings.map(t=>{const cat=t.category||'연수';return `<div class="training-select-card" onclick="selectTraining('${t.id}')"><div><span class="training-select-badge">${catIcon(cat)} ${esc(cat)}</span></div><div class="training-select-date">${t.date}${t.time?' | '+t.time:''}</div><div class="training-select-name">${esc(t.name)}</div>${t.location?`<div class="training-select-location">📍 ${esc(t.location)}</div>`:''}</div>`}).join('')}
   showScreen('screen-user');
 }
 
-function selectEvent(id) {
-  const t = state.events.find(x => x.id === id); if (!t) return;
-  state.currentEvent = t;
-  document.getElementById('sign-form-event-name').textContent = t.name;
-
-  let detail = '';
-  if (t.date) detail += '📅 ' + t.date;
-  if (t.time) detail += ' | ⏰ ' + t.time;
-  if (t.location) detail += '<br>📍 ' + escHtml(t.location);
-  document.getElementById('sign-form-event-detail').innerHTML = detail;
-
-  document.getElementById('sign-dept').value = '';
-  document.getElementById('sign-position').value = '';
-  document.getElementById('sign-name').value = '';
-
-  if (t.type === 'internal' && state.roster.length > 0) {
-    document.getElementById('sign-dept').placeholder = '소속 입력 (선택)';
-    document.getElementById('sign-name').placeholder = '성명 입력 (명단 확인)';
-    setupRosterAutocomplete();
-  } else {
-    document.getElementById('sign-dept').placeholder = '소속 입력';
-    document.getElementById('sign-name').placeholder = '성명 입력';
-    removeRosterAutocomplete();
-  }
+function selectTraining(id){
+  const t=state.trainings.find(x=>x.id===id);if(!t)return;
+  state.currentTraining=t;const cat=t.category||'연수';
+  document.getElementById('sign-form-training-name').textContent=t.name;
+  let d=`<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:#E3F2FD;color:#1565C0;margin-bottom:4px;">${catIcon(cat)} ${esc(cat)}</span><br>`;
+  if(t.date)d+='📅 '+t.date;if(t.time)d+=' | ⏰ '+t.time;if(t.location)d+='<br>📍 '+esc(t.location);
+  document.getElementById('sign-form-training-detail').innerHTML=d;
+  document.getElementById('sign-dept').value='';document.getElementById('sign-position').value='';document.getElementById('sign-name').value='';
+  if(t.type==='school'&&state.roster.length>0){document.getElementById('sign-dept').placeholder='소속 (선택)';document.getElementById('sign-name').placeholder='성명 (명단 확인)';setupAutoComplete()}
+  else{document.getElementById('sign-dept').placeholder='소속 입력';document.getElementById('sign-name').placeholder='성명 입력';removeAutoComplete()}
   showScreen('screen-sign-form');
 }
 
-function setupRosterAutocomplete() {
-  const ni = document.getElementById('sign-name');
-  let dd = document.getElementById('roster-dd');
-  if (!dd) {
-    dd = document.createElement('div'); dd.id = 'roster-dd';
-    dd.style.cssText = 'position:absolute;z-index:200;background:white;border:1.5px solid #E2E8F0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:200px;overflow-y:auto;width:100%;';
-    ni.parentElement.style.position = 'relative';
-    ni.parentElement.appendChild(dd);
-  }
-  ni.oninput = function() {
-    const v = this.value.trim();
-    const f = v ? state.roster.filter(r => r.name.includes(v)) : [];
-    if (!f.length || !v) { dd.style.display='none'; return; }
-    dd.style.display = 'block';
-    dd.innerHTML = f.slice(0,10).map(r => `
-      <div style="padding:10px 14px;cursor:pointer;font-size:13.5px;border-bottom:1px solid #F1F5F9;"
-        onmousedown="fillFromRoster('${escHtml(r.name)}','${escHtml(r.dept)}','${escHtml(r.position)}')">
-        <strong>${escHtml(r.name)}</strong>
-        <span style="color:#94A3B8;font-size:12px;margin-left:8px;">${escHtml(r.dept)} · ${escHtml(r.position)}</span>
-      </div>`).join('');
-  };
-  document.addEventListener('click', function h(e) {
-    if (!e.target.closest('#roster-dd') && e.target !== ni) dd.style.display = 'none';
-  });
+function setupAutoComplete(){
+  const ni=document.getElementById('sign-name');let dd=document.getElementById('ac-dd');
+  if(!dd){dd=document.createElement('div');dd.id='ac-dd';dd.style.cssText='position:absolute;z-index:200;background:white;border:1.5px solid #E2E8F0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;width:100%;';ni.parentElement.style.position='relative';ni.parentElement.appendChild(dd)}
+  ni.oninput=function(){const v=this.value.trim();const f=v?state.roster.filter(r=>r.name.includes(v)):[];if(!f.length||!v){dd.style.display='none';return}dd.style.display='block';dd.innerHTML=f.slice(0,10).map(r=>`<div style="padding:10px 14px;cursor:pointer;font-size:13.5px;border-bottom:1px solid #F1F5F9;" onmousedown="fillRoster('${esc(r.name)}','${esc(r.dept)}','${esc(r.position)}')"><strong>${esc(r.name)}</strong><span style="color:#94A3B8;font-size:12px;margin-left:8px;">${esc(r.dept)} · ${esc(r.position)}</span></div>`).join('')};
+  document.addEventListener('click',function h(e){if(!e.target.closest('#ac-dd')&&e.target!==ni)dd.style.display='none'});
 }
+function fillRoster(n,d,p){document.getElementById('sign-name').value=n;document.getElementById('sign-dept').value=d;document.getElementById('sign-position').value=p;const dd=document.getElementById('ac-dd');if(dd)dd.style.display='none'}
+function removeAutoComplete(){document.getElementById('sign-name').oninput=null;const dd=document.getElementById('ac-dd');if(dd)dd.remove()}
 
-function fillFromRoster(name, dept, pos) {
-  document.getElementById('sign-name').value = name;
-  document.getElementById('sign-dept').value = dept;
-  document.getElementById('sign-position').value = pos;
-  const dd = document.getElementById('roster-dd'); if (dd) dd.style.display = 'none';
-}
-
-function removeRosterAutocomplete() {
-  document.getElementById('sign-name').oninput = null;
-  const dd = document.getElementById('roster-dd'); if (dd) dd.remove();
-}
-
-function goToSignature() {
-  const dept = document.getElementById('sign-dept').value.trim();
-  const position = document.getElementById('sign-position').value.trim();
-  const name = document.getElementById('sign-name').value.trim();
-  if (!name) { toast('성명을 입력해주세요.'); return; }
-
-  const t = state.currentEvent;
-  if (t && t.type === 'internal' && state.roster.length > 0) {
-    const inR = state.roster.find(r => r.name === name);
-    if (!inR) { toast(`❌ "${name}"님은 명단에 없습니다.`); return; }
-    if (dept && inR.dept && dept !== inR.dept) {
-      if (!confirm(`소속이 명단과 다릅니다.\n명단: ${inR.dept} / 입력: ${dept}\n계속하시겠습니까?`)) return;
-    }
-  }
-  if (t) {
-    const dup = t.signatures.find(s => s.name === name && s.dept === dept);
-    if (dup && !confirm(`${name}님은 이미 서명하셨습니다. 다시 서명하시겠습니까?`)) return;
-  }
-
-  state.currentPerson = { dept, position, name };
-  document.getElementById('sig-event-name-display').textContent = t?.name || '';
-  document.getElementById('sig-person-name').textContent = name + '님 서명';
-
-  showScreen('screen-signature');
-  sigMode = 'draw';
-  document.getElementById('mode-btn-draw').classList.add('active');
-  document.getElementById('mode-btn-upload').classList.remove('active');
-  document.getElementById('sig-draw-area').style.display = 'block';
-  document.getElementById('sig-upload-area').style.display = 'none';
+function goToSignature(){
+  const dept=document.getElementById('sign-dept').value.trim();
+  const pos=document.getElementById('sign-position').value.trim();
+  const name=document.getElementById('sign-name').value.trim();
+  if(!name){toast('성명을 입력해주세요.');return}
+  const t=state.currentTraining;
+  if(t&&t.type==='school'&&state.roster.length>0){const r=state.roster.find(r=>r.name===name);if(!r){toast(`❌ "${name}"님은 명단에 없습니다.`);return}if(dept&&r.dept&&dept!==r.dept&&!confirm(`소속이 다릅니다.\n명단:${r.dept}/입력:${dept}\n계속?`))return}
+  if(t){const dup=t.signatures.find(s=>s.name===name&&s.dept===dept);if(dup&&!confirm(`${name}님은 이미 서명. 다시 서명?`))return}
+  state.currentPerson={dept,position:pos,name};
+  const cat=t?.category||'연수';
+  document.getElementById('sig-training-label-display').textContent='서명 대상 '+cat;
+  document.getElementById('sig-training-name-display').textContent=t?.name||'';
+  document.getElementById('sig-person-name').textContent=name+'님 서명';
+  showScreen('screen-signature');sigMode='draw';
+  document.getElementById('mode-btn-draw').classList.add('active');document.getElementById('mode-btn-upload').classList.remove('active');
+  document.getElementById('sig-draw-area').style.display='block';document.getElementById('sig-upload-area').style.display='none';
   initCanvas();
 }
 
-// ===== SIGNATURE =====
-let sigMode = 'draw', uploadedSigDataUrl = null;
+// SIGNATURE
+let sigMode='draw',uploadedSig=null;
+function setSigMode(m){sigMode=m;document.getElementById('mode-btn-draw').classList.toggle('active',m==='draw');document.getElementById('mode-btn-upload').classList.toggle('active',m==='upload');document.getElementById('sig-draw-area').style.display=m==='draw'?'block':'none';document.getElementById('sig-upload-area').style.display=m==='upload'?'block':'none';if(m==='draw')initCanvas();if(m==='upload')setTimeout(()=>document.getElementById('sig-upload-input')?.click(),100)}
 
-function setSigMode(mode) {
-  sigMode = mode;
-  document.getElementById('mode-btn-draw').classList.toggle('active', mode==='draw');
-  document.getElementById('mode-btn-upload').classList.toggle('active', mode==='upload');
-  document.getElementById('sig-draw-area').style.display = mode==='draw'?'block':'none';
-  document.getElementById('sig-upload-area').style.display = mode==='upload'?'block':'none';
-  if (mode==='draw') initCanvas();
-  if (mode==='upload') setTimeout(() => document.getElementById('sig-upload-input')?.click(), 100);
-}
+function loadUploadedImage(file){const r=new FileReader();r.onload=function(e){uploadedSig=e.target.result;document.getElementById('sig-upload-preview').src=uploadedSig;document.getElementById('sig-upload-preview').style.display='block';document.getElementById('sig-upload-placeholder').style.display='none';document.getElementById('sig-upload-change-btn').style.display='block';document.getElementById('sig-upload-wrap').classList.add('has-image')};r.readAsDataURL(file)}
 
-function onDragOver(e) { e.preventDefault(); document.getElementById('sig-upload-wrap').classList.add('dragover'); }
-function onDragLeave(e) { document.getElementById('sig-upload-wrap').classList.remove('dragover'); }
-function onDrop(e) {
-  e.preventDefault(); document.getElementById('sig-upload-wrap').classList.remove('dragover');
-  const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) loadUploadedImage(f);
-}
-function onUploadFile(input) { const f = input.files[0]; if (f) loadUploadedImage(f); }
-function loadUploadedImage(file) {
-  const r = new FileReader();
-  r.onload = function(e) {
-    uploadedSigDataUrl = e.target.result;
-    document.getElementById('sig-upload-preview').src = uploadedSigDataUrl;
-    document.getElementById('sig-upload-preview').style.display = 'block';
-    document.getElementById('sig-upload-placeholder').style.display = 'none';
-    document.getElementById('sig-upload-change-btn').style.display = 'block';
-    document.getElementById('sig-upload-wrap').classList.add('has-image');
-  };
-  r.readAsDataURL(file);
-}
+let isDrawing=false,lastX=0,lastY=0,canvas,ctx;
+function initCanvas(){canvas=document.getElementById('sig-canvas');ctx=canvas.getContext('2d');canvas.width=canvas.parentElement.getBoundingClientRect().width;canvas.height=200;clearCanvas();canvas.onmousedown=e=>{isDrawing=true;[lastX,lastY]=gp(e)};canvas.onmousemove=e=>{if(isDrawing)dr(e)};canvas.onmouseup=canvas.onmouseleave=()=>isDrawing=false;canvas.ontouchstart=e=>{e.preventDefault();isDrawing=true;[lastX,lastY]=gp(e.touches[0])};canvas.ontouchmove=e=>{e.preventDefault();if(isDrawing)dr(e.touches[0])};canvas.ontouchend=()=>isDrawing=false}
+function gp(e){const r=canvas.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
+function dr(e){const[x,y]=gp(e);ctx.beginPath();ctx.strokeStyle='#1e1e1e';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';ctx.moveTo(lastX,lastY);ctx.lineTo(x,y);ctx.stroke();[lastX,lastY]=[x,y]}
+function clearCanvas(){if(!ctx)return;ctx.fillStyle='#FFF';ctx.fillRect(0,0,canvas.width,canvas.height)}
 
-let isDrawing = false, lastX = 0, lastY = 0, canvas, ctx;
+function completeSignature(){
+  let sigImg=null;
+  if(sigMode==='draw'){const d=ctx.getImageData(0,0,canvas.width,canvas.height);let has=false;for(let i=0;i<d.data.length;i+=4){if(d.data[i]<240){has=true;break}}if(!has){toast('서명을 해주세요.');return}sigImg=canvas.toDataURL('image/png')}
+  else{if(!uploadedSig){toast('이미지를 업로드해주세요.');return}sigImg=uploadedSig}
+  const sig={...state.currentPerson,signatureImg:sigImg,time:new Date().toLocaleString('ko-KR')};
+  if(state.currentTraining){
+    state.currentTraining.signatures=state.currentTraining.signatures.filter(s=>!(s.name===sig.name&&s.dept===sig.dept));
+    state.currentTraining.signatures.push(sig);saveState();
 
-function initCanvas() {
-  canvas = document.getElementById('sig-canvas');
-  ctx = canvas.getContext('2d');
-  canvas.width = canvas.parentElement.getBoundingClientRect().width;
-  canvas.height = 200;
-  clearCanvas(); setupCanvasEvents();
-}
-
-function setupCanvasEvents() {
-  canvas.onmousedown = (e) => { isDrawing=true; [lastX,lastY]=getPos(e); };
-  canvas.onmousemove = (e) => { if(isDrawing) draw(e); };
-  canvas.onmouseup = canvas.onmouseleave = () => isDrawing=false;
-  canvas.ontouchstart = (e) => { e.preventDefault(); isDrawing=true; [lastX,lastY]=getPos(e.touches[0]); };
-  canvas.ontouchmove = (e) => { e.preventDefault(); if(isDrawing) draw(e.touches[0]); };
-  canvas.ontouchend = () => isDrawing=false;
-}
-
-function getPos(e) { const r=canvas.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
-
-function draw(e) {
-  const [x,y] = getPos(e);
-  ctx.beginPath(); ctx.strokeStyle='#1e1e1e'; ctx.lineWidth=3;
-  ctx.lineCap='round'; ctx.lineJoin='round';
-  ctx.moveTo(lastX,lastY); ctx.lineTo(x,y); ctx.stroke();
-  [lastX,lastY] = [x,y];
-}
-
-function clearCanvas() { if(!ctx) return; ctx.fillStyle='#FFFFFF'; ctx.fillRect(0,0,canvas.width,canvas.height); }
-
-function completeSignature() {
-  let sigImg = null;
-  if (sigMode === 'draw') {
-    const d = ctx.getImageData(0,0,canvas.width,canvas.height);
-    let has = false;
-    for (let i=0; i<d.data.length; i+=4) { if (d.data[i]<240) { has=true; break; } }
-    if (!has) { toast('서명을 해주세요.'); return; }
-    sigImg = canvas.toDataURL('image/png');
-  } else {
-    if (!uploadedSigDataUrl) { toast('서명 이미지를 업로드해주세요.'); return; }
-    sigImg = uploadedSigDataUrl;
+    // ★★★ 구글 시트에도 전송 (gasUrl이 있으면) ★★★
+    const gasUrl=state.gasUrl||state.currentTraining.gasUrl;
+    if(gasUrl)sendToSheets(gasUrl,state.currentTraining,sig);
   }
-
-  const sig = { ...state.currentPerson, signatureImg: sigImg, time: new Date().toLocaleString('ko-KR') };
-
-  if (state.currentEvent) {
-    state.currentEvent.signatures = state.currentEvent.signatures.filter(
-      s => !(s.name===sig.name && s.dept===sig.dept));
-    state.currentEvent.signatures.push(sig);
-    saveState();
-    if (state.gasUrl) sendSignatureToSheets(state.currentEvent, sig);
-  }
-
-  // Reset upload
-  uploadedSigDataUrl = null;
-  document.getElementById('sig-upload-preview').style.display = 'none';
-  document.getElementById('sig-upload-preview').src = '';
-  document.getElementById('sig-upload-placeholder').style.display = '';
-  document.getElementById('sig-upload-change-btn').style.display = 'none';
-  document.getElementById('sig-upload-wrap').classList.remove('has-image');
-  document.getElementById('sig-upload-input').value = '';
-
-  document.getElementById('success-msg').textContent = `${state.currentPerson?.name}님의 서명이 등록되었습니다.`;
+  // 리셋
+  uploadedSig=null;document.getElementById('sig-upload-preview').style.display='none';document.getElementById('sig-upload-preview').src='';document.getElementById('sig-upload-placeholder').style.display='';document.getElementById('sig-upload-change-btn').style.display='none';document.getElementById('sig-upload-wrap').classList.remove('has-image');document.getElementById('sig-upload-input').value='';
+  document.getElementById('success-msg').textContent=`${state.currentPerson?.name}님의 서명이 등록되었습니다.`;
   showScreen('screen-success');
 }
 
-async function sendSignatureToSheets(ev, sig) {
-  try {
-    await fetch(state.gasUrl, {
-      method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({
-        action:'addSignature', eventName:ev.name, date:ev.date, location:ev.location||'',
-        signature: { dept:sig.dept, position:sig.position, name:sig.name,
-          signatureImg:sig.signatureImg, time:sig.time, signMode: sigMode==='draw'?'직접서명':'이미지업로드' }
-      })
-    });
-  } catch(e) { console.warn('시트 전송 실패:', e); }
+async function sendToSheets(gasUrl,ev,sig){
+  try{
+    const cat=ev.category||'연수';
+    await fetch(gasUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'addSignature',trainingName:ev.name,category:cat,date:ev.date,location:ev.location||'',
+        signature:{dept:sig.dept,position:sig.position,name:sig.name,signatureImg:sig.signatureImg,time:sig.time,signMode:sigMode==='draw'?'직접서명':'이미지업로드'}})
+    });console.log('✅ 시트 전송 완료');
+  }catch(e){console.warn('시트 전송 실패:',e)}
 }
 
-// ===== ADMIN TABS =====
-function switchAdminTab(tabId) {
-  document.querySelectorAll('.admin-tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['tab-manage','tab-sheets','tab-roster'][i] === tabId);
-  });
-  document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  if (tabId==='tab-sheets') updateSheetsStatusUI();
+// ADMIN TABS
+function switchAdminTab(tabId){document.querySelectorAll('.admin-tab-btn').forEach((b,i)=>{b.classList.toggle('active',['tab-manage','tab-sheets','tab-roster'][i]===tabId)});document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById(tabId).classList.add('active');if(tabId==='tab-sheets')updateSheetsStatusUI()}
+function toggleGasSetup(h){h.classList.toggle('open');h.querySelector('.gas-toggle-arrow').classList.toggle('open');h.nextElementSibling.classList.toggle('open')}
+
+// GAS
+function updateSheetsStatusUI(){
+  const u=state.gasUrl;const d=document.getElementById('sheets-status-dot');const t=document.getElementById('sheets-status-text');const ut=document.getElementById('sheets-status-url');const sb=document.getElementById('btn-sync-all');const ui=document.getElementById('gas-url-input');if(ui&&u)ui.value=u;
+  if(u){d.className='gas-status-dot connected';t.textContent='✅ 연동됨';ut.textContent=u.length>60?u.substring(0,60)+'...':u;sb.style.display='flex';document.getElementById('sync-banner').classList.remove('show')}
+  else{d.className='gas-status-dot';t.textContent='연동 안 됨';ut.textContent='웹앱 URL이 설정되지 않았습니다.';sb.style.display='none'}
+}
+async function testGasConnection(){
+  const u=document.getElementById('gas-url-input').value.trim();if(!u){toast('URL을 입력해주세요.');return}
+  const el=document.getElementById('connection-status');el.className='connection-status-box';el.textContent='🔄 확인 중...';el.style.display='block';
+  try{const r=await fetch(u+'?action=ping');if(r.ok){state.gasUrl=u;saveState();el.className='connection-status-box success';el.textContent='✅ 연결 성공!';updateSheetsStatusUI();toast('연동 완료!')}else throw new Error(r.status)}
+  catch(e){if(u.includes('script.google.com')){state.gasUrl=u;saveState();el.className='connection-status-box success';el.textContent='✅ URL 저장됨 (실제 전송은 서명 시 확인)';updateSheetsStatusUI()}else{el.className='connection-status-box error';el.textContent='❌ 실패: URL 확인'}}
+}
+async function syncAllToSheets(){
+  if(!state.gasUrl||!state.trainings.length){toast('저장할 데이터가 없습니다.');return}
+  const el=document.getElementById('sync-result');el.className='sync-result-box show fail';el.textContent='🔄 저장 중...';
+  let ok=0,fail=0;const msgs=[];
+  for(const t of state.trainings){try{await fetch(state.gasUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveSignatures',trainingName:t.name,category:t.category||'연수',date:t.date,location:t.location||'',signatures:t.signatures.map(s=>({...s,signMode:s.signMode||'직접서명'}))})});ok++;msgs.push('✅ '+t.name)}catch(e){fail++;msgs.push('❌ '+t.name)}}
+  el.className='sync-result-box show '+(fail===0?'ok':'fail');el.innerHTML=msgs.join('<br>')+'<br><br>'+(fail===0?'🎉 완료!':'⚠️ 일부 실패');
 }
 
-function toggleGasSetup(header) {
-  header.classList.toggle('open');
-  header.querySelector('.gas-toggle-arrow').classList.toggle('open');
-  header.nextElementSibling.classList.toggle('open');
-}
-
-// ===== GOOGLE SHEETS =====
-function updateSheetsStatusUI() {
-  const url = state.gasUrl;
-  const dot = document.getElementById('sheets-status-dot');
-  const txt = document.getElementById('sheets-status-text');
-  const urlTxt = document.getElementById('sheets-status-url');
-  const syncBtn = document.getElementById('btn-sync-all');
-  const urlInput = document.getElementById('gas-url-input');
-  if (urlInput && url) urlInput.value = url;
-  if (url) {
-    dot.className = 'gas-status-dot connected';
-    txt.textContent = '✅ 구글 시트 연동됨';
-    urlTxt.textContent = url.length > 60 ? url.substring(0,60)+'...' : url;
-    syncBtn.style.display = 'flex';
-  } else {
-    dot.className = 'gas-status-dot';
-    txt.textContent = '연동 안 됨';
-    urlTxt.textContent = '웹앱 URL이 설정되지 않았습니다.';
-    syncBtn.style.display = 'none';
-  }
-}
-
-async function testGasConnection() {
-  const url = document.getElementById('gas-url-input').value.trim();
-  if (!url) { toast('URL을 입력해주세요.'); return; }
-  const el = document.getElementById('connection-status');
-  el.className = 'connection-status-box'; el.textContent = '🔄 확인 중...'; el.style.display = 'block';
-  try {
-    const res = await fetch(url+'?action=ping', {method:'GET',mode:'cors'});
-    if (res.ok) {
-      state.gasUrl = url; saveState();
-      el.className = 'connection-status-box success'; el.textContent = '✅ 연결 성공!';
-      updateSheetsStatusUI(); toast('구글 시트 연동 완료!');
-    } else throw new Error(res.status);
-  } catch(err) {
-    if (url.includes('script.google.com')) {
-      state.gasUrl = url; saveState();
-      el.className = 'connection-status-box success';
-      el.textContent = '✅ URL 저장됨 (CORS 정책으로 실제 전송은 데이터 저장 시 확인)';
-      updateSheetsStatusUI();
-    } else {
-      el.className = 'connection-status-box error';
-      el.textContent = '❌ 연결 실패: URL 확인 필요';
-    }
-  }
-}
-
-async function syncAllToSheets() {
-  if (!state.gasUrl) { toast('먼저 구글 시트 URL을 설정해주세요.'); return; }
-  if (!state.events.length) { toast('저장할 행사가 없습니다.'); return; }
-  const el = document.getElementById('sync-result');
-  el.className = 'sync-result-box show fail'; el.textContent = '🔄 저장 중...';
-  let ok=0, fail=0; const msgs=[];
-  for (const t of state.events) {
-    try {
-      await fetch(state.gasUrl, {
-        method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({ action:'saveSignatures', eventName:t.name, date:t.date,
-          location:t.location||'', signatures:t.signatures.map(s=>({...s,signMode:s.signMode||'직접서명'})) })
-      });
-      ok++; msgs.push('✅ '+t.name+' ('+t.signatures.length+'명)');
-    } catch(e) { fail++; msgs.push('❌ '+t.name+' - 실패'); }
-  }
-  el.className = 'sync-result-box show '+(fail===0?'ok':'fail');
-  el.innerHTML = msgs.join('<br>')+'<br><br>'+(fail===0?'🎉 전체 저장 완료!':'⚠️ 일부 실패');
-  if (fail===0) toast('구글 시트 저장 완료!');
-}
-
-async function syncSingleToSheets(id) {
-  const t = state.events.find(x => x.id === id); if (!t) return;
-  if (!state.gasUrl) { toast('먼저 구글 시트 URL을 설정해주세요.'); return; }
-  toast('저장 중...');
-  try {
-    await fetch(state.gasUrl, {
-      method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ action:'saveSignatures', eventName:t.name, date:t.date,
-        location:t.location||'', signatures:t.signatures.map(s=>({...s,signMode:s.signMode||'직접서명'})) })
-    });
-    toast('✅ '+t.name+' → 시트 저장 완료!');
-  } catch(e) { toast('❌ 저장 실패'); }
-}
-
-// ===== GAS CODE =====
-const GAS_CODE = `// =============================================
+// GAS CODE — ★★★ getSignatures 액션 추가 ★★★
+const GAS_CODE=`// =============================================
 // 등록부 서명 도우미 - Google Apps Script
+// 연수, 회의, 위원회 등 모든 행사 지원
 // =============================================
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var action = data.action;
-    if (action === 'saveSignatures') return saveSignatures(ss, data);
-    if (action === 'addSignature') return addSingleSignature(ss, data);
-    return okResponse({message: 'unknown action'});
+    if (data.action === 'saveSignatures') return saveSignatures(ss, data);
+    if (data.action === 'addSignature') return addSingleSignature(ss, data);
+    return ok({message: 'unknown action'});
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({success:false, error:err.message}))
       .setMimeType(ContentService.MimeType.JSON);
@@ -1839,156 +862,166 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return okResponse({message: '서명 도우미 연결 OK'});
+  var action = (e && e.parameter && e.parameter.action) || 'ping';
+
+  if (action === 'ping') {
+    return ok({message: '서명 도우미 연결 OK'});
+  }
+
+  // ★ 핵심: 시트에서 서명 데이터 읽어오기
+  if (action === 'getSignatures') {
+    var sheetName = e.parameter.sheet || '';
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = null;
+
+    // 정확한 이름으로 먼저 찾기
+    sheet = ss.getSheetByName(sheetName);
+
+    // 못 찾으면 부분 일치로 찾기
+    if (!sheet) {
+      var sheets = ss.getSheets();
+      for (var i = 0; i < sheets.length; i++) {
+        if (sheets[i].getName().indexOf(sheetName) >= 0 || sheetName.indexOf(sheets[i].getName()) >= 0) {
+          sheet = sheets[i]; break;
+        }
+      }
+    }
+
+    if (!sheet) {
+      // 가장 최근 시트 (첫 번째 제외)
+      var sheets = ss.getSheets();
+      if (sheets.length > 1) sheet = sheets[sheets.length - 1];
+    }
+
+    if (!sheet) return ok({success: true, signatures: [], message: '시트 없음'});
+
+    var lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return ok({success: true, signatures: [], message: '데이터 없음'});
+
+    var data = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
+    var sigs = data.filter(function(row) { return row[3]; }).map(function(row) {
+      return {
+        num: row[0],
+        dept: row[1] || '',
+        position: row[2] || '',
+        name: row[3] || '',
+        imageUrl: row[4] || '',
+        signMode: row[5] || '',
+        time: row[6] || ''
+      };
+    });
+
+    return ok({success: true, signatures: sigs, sheetName: sheet.getName()});
+  }
+
+  return ok({message: '서명 도우미 연결 OK'});
 }
 
-function getOrCreateSheet(ss, eventName, date, location) {
-  var sheetName = (date + '_' + eventName).substring(0, 40);
-  var sheet = ss.getSheetByName(sheetName);
+function getOrCreateSheet(ss, name, date, location, category) {
+  var sn = (date + '_' + (category||'') + '_' + name).substring(0, 40);
+  var sheet = ss.getSheetByName(sn);
   if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
+    sheet = ss.insertSheet(sn);
     sheet.getRange(1,1,1,7).setValues([['번호','소속','직위','성명','서명이미지URL','서명방식','시각']]);
     sheet.getRange(1,1,1,7).setFontWeight('bold');
     sheet.setFrozenRows(1);
-    sheet.getRange(1,9).setValue('행사명');
-    sheet.getRange(1,10).setValue(eventName);
-    sheet.getRange(2,9).setValue('날짜');
-    sheet.getRange(2,10).setValue(date);
-    sheet.getRange(3,9).setValue('장소');
-    sheet.getRange(3,10).setValue(location);
+    sheet.getRange(1,9).setValue('행사명'); sheet.getRange(1,10).setValue(name);
+    sheet.getRange(2,9).setValue('유형'); sheet.getRange(2,10).setValue(category||'연수');
+    sheet.getRange(3,9).setValue('날짜'); sheet.getRange(3,10).setValue(date);
+    sheet.getRange(4,9).setValue('장소'); sheet.getRange(4,10).setValue(location);
   }
-  return { sheet: sheet, sheetName: sheetName };
+  return {sheet:sheet, sheetName:sn};
 }
 
 function addSingleSignature(ss, data) {
-  var eventName = data.eventName || data.trainingName || '행사';
-  var result = getOrCreateSheet(ss, eventName, data.date||'', data.location||'');
-  var sheet = result.sheet;
-  var num = sheet.getLastRow();
+  var r = getOrCreateSheet(ss, data.trainingName||'', data.date||'', data.location||'', data.category||'연수');
   var sig = data.signature;
+  var lastRow = r.sheet.getLastRow();
+
+  // 중복 체크 (같은 이름+소속이면 덮어쓰기)
+  if (lastRow > 1) {
+    var existing = r.sheet.getRange(2, 1, lastRow - 1, 7).getValues();
+    for (var i = 0; i < existing.length; i++) {
+      if (existing[i][3] === sig.name && existing[i][1] === sig.dept) {
+        var imgUrl = '';
+        try { if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0) imgUrl = saveImg(sig.signatureImg, r.sheetName + '_' + sig.name); } catch(e) { imgUrl = '실패'; }
+        r.sheet.getRange(i+2, 1, 1, 7).setValues([[i+1, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'', sig.time||'']]);
+        return ok({success:true, message:sig.name+' 덮어쓰기 완료'});
+      }
+    }
+  }
+
+  var num = lastRow;
   var imgUrl = '';
-  try {
-    if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0)
-      imgUrl = saveImageToDrive(sig.signatureImg, result.sheetName + '_' + num + '_' + sig.name);
-  } catch(e) { imgUrl = '이미지저장실패'; }
-  sheet.appendRow([num, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'직접서명', sig.time||'']);
-  return okResponse({success:true, message: sig.name + ' 추가 완료'});
+  try { if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0) imgUrl = saveImg(sig.signatureImg, r.sheetName + '_' + num + '_' + sig.name); } catch(e) { imgUrl = '실패'; }
+  r.sheet.appendRow([num, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'', sig.time||'']);
+  return ok({success:true, message:sig.name+' 추가 완료'});
 }
 
 function saveSignatures(ss, data) {
-  var eventName = data.eventName || data.trainingName || '행사';
-  var result = getOrCreateSheet(ss, eventName, data.date||'', data.location||'');
-  var sheet = result.sheet;
-  var lastRow = sheet.getLastRow();
-  if (lastRow > 1) sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
-  var signatures = data.signatures || [];
-  if (!signatures.length) return okResponse({message: '서명 없음'});
-  var rows = signatures.map(function(sig, i) {
+  var r = getOrCreateSheet(ss, data.trainingName||'', data.date||'', data.location||'', data.category||'연수');
+  var sigs = data.signatures || [];
+  var lastRow = r.sheet.getLastRow();
+  if (lastRow > 1) r.sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
+  if (!sigs.length) return ok({message:'서명 없음'});
+  var rows = sigs.map(function(sig, i) {
     var imgUrl = '';
-    try {
-      if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0)
-        imgUrl = saveImageToDrive(sig.signatureImg, result.sheetName + '_' + (i+1) + '_' + sig.name);
-    } catch(e) { imgUrl = '이미지저장실패'; }
-    return [i+1, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'직접서명', sig.time||''];
+    try { if (sig.signatureImg && sig.signatureImg.indexOf('data:image') === 0) imgUrl = saveImg(sig.signatureImg, r.sheetName + '_' + (i+1) + '_' + sig.name); } catch(e) { imgUrl = '실패'; }
+    return [i+1, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'', sig.time||''];
   });
-  sheet.getRange(2, 1, rows.length, 7).setValues(rows);
-  return okResponse({success:true, message: signatures.length + '명 저장 완료'});
+  r.sheet.getRange(2, 1, rows.length, 7).setValues(rows);
+  return ok({success:true, message:sigs.length+'명 저장'});
 }
 
-function saveImageToDrive(dataUrl, filename) {
+function saveImg(dataUrl, filename) {
   var folders = DriveApp.getFoldersByName('서명이미지');
   var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder('서명이미지');
   var parts = dataUrl.split(',');
-  var mimeType = parts[0].match(/:(.*?);/)[1];
-  var decoded = Utilities.base64Decode(parts[1]);
-  var blob = Utilities.newBlob(decoded, mimeType, filename + '.png');
+  var blob = Utilities.newBlob(Utilities.base64Decode(parts[1]), parts[0].match(/:(.*?);/)[1], filename + '.png');
   var file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return file.getUrl();
 }
 
-function okResponse(obj) {
+function ok(obj) {
   obj.success = obj.success !== false;
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }`;
 
-document.addEventListener('DOMContentLoaded', function() {
-  const el = document.getElementById('gas-code-display');
-  if (el) el.textContent = GAS_CODE;
-});
+document.addEventListener('DOMContentLoaded',function(){const el=document.getElementById('gas-code-display');if(el)el.textContent=GAS_CODE});
+function copyGasCode(){const b=document.querySelector('#gas-code-block .btn-copy-code');navigator.clipboard.writeText(GAS_CODE).then(()=>{b.textContent='✅ 복사됨!';setTimeout(()=>b.textContent='📋 복사',2000)}).catch(()=>{const ta=document.createElement('textarea');ta.value=GAS_CODE;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);b.textContent='✅ 복사됨!';setTimeout(()=>b.textContent='📋 복사',2000)})}
 
-function copyGasCode() {
-  const btn = document.querySelector('#gas-code-block .btn-copy-code');
-  navigator.clipboard.writeText(GAS_CODE).then(() => {
-    btn.textContent = '✅ 복사됨!'; setTimeout(() => btn.textContent = '📋 복사', 2000);
-  }).catch(() => {
-    const ta = document.createElement('textarea'); ta.value = GAS_CODE;
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    btn.textContent = '✅ 복사됨!'; setTimeout(() => btn.textContent = '📋 복사', 2000);
-  });
-}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// INIT
+renderTrainingList();
 
-// ===== INIT =====
-renderEventList();
-
-// URL 파라미터 처리
-(function handleUrlParam() {
-  const params = new URLSearchParams(window.location.search);
-
-  // 새 방식: ?d=인코딩데이터
-  const enc = params.get('d');
-  if (enc) {
-    const decoded = decodeEventFromUrl(enc);
-    if (decoded) {
-      let existing = state.events.find(x => x.id === decoded.id);
-      if (!existing) {
-        existing = decoded;
-        state.events.push(existing); saveState();
-      }
-      state.currentEvent = existing;
-      document.getElementById('sign-form-event-name').textContent = existing.name;
-      let detail = '';
-      if (existing.date) detail += '📅 ' + existing.date;
-      if (existing.time) detail += ' | ⏰ ' + existing.time;
-      if (existing.location) detail += '<br>📍 ' + escHtml(existing.location);
-      document.getElementById('sign-form-event-detail').innerHTML = detail;
-      document.getElementById('sign-dept').value = '';
-      document.getElementById('sign-position').value = '';
-      document.getElementById('sign-name').value = '';
-      document.getElementById('sign-dept').placeholder = '소속 입력';
-      document.getElementById('sign-name').placeholder = '성명 입력';
-      removeRosterAutocomplete();
-      showScreen('screen-sign-form');
-      return;
+// URL PARAM HANDLING — ★ gasUrl도 URL에 포함하여 모바일에서도 시트 전송 가능
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const enc=params.get('d');
+  if(enc){
+    const decoded=decodeFromUrl(enc);
+    if(decoded){
+      let existing=state.trainings.find(x=>x.id===decoded.id);
+      if(!existing){existing=decoded;state.trainings.push(existing);saveState()}
+      // ★ 모바일에서도 gasUrl 사용 가능하도록
+      if(decoded.gasUrl&&!state.gasUrl){state.gasUrl=decoded.gasUrl;saveState()}
+      state.currentTraining=existing;
+      // gasUrl이 있으면 모바일에서도 currentTraining에 저장
+      if(decoded.gasUrl)existing.gasUrl=decoded.gasUrl;
+      const cat=existing.category||'연수';
+      document.getElementById('sign-form-training-name').textContent=existing.name;
+      let d=`<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:#E3F2FD;color:#1565C0;margin-bottom:4px;">${catIcon(cat)} ${esc(cat)}</span><br>`;
+      if(existing.date)d+='📅 '+existing.date;if(existing.time)d+=' | ⏰ '+existing.time;if(existing.location)d+='<br>📍 '+esc(existing.location);
+      document.getElementById('sign-form-training-detail').innerHTML=d;
+      document.getElementById('sign-dept').value='';document.getElementById('sign-position').value='';document.getElementById('sign-name').value='';
+      document.getElementById('sign-dept').placeholder='소속 입력';document.getElementById('sign-name').placeholder='성명 입력';
+      removeAutoComplete();showScreen('screen-sign-form');return;
     }
   }
-
-  // 레거시: ?t=ID
-  const tid = params.get('t');
-  if (tid) {
-    const found = state.events.find(x => x.id === tid);
-    if (found) {
-      state.currentEvent = found;
-      document.getElementById('sign-form-event-name').textContent = found.name;
-      let detail = '';
-      if (found.date) detail += '📅 ' + found.date;
-      if (found.time) detail += ' | ⏰ ' + found.time;
-      if (found.location) detail += '<br>📍 ' + escHtml(found.location);
-      document.getElementById('sign-form-event-detail').innerHTML = detail;
-      document.getElementById('sign-dept').value = '';
-      document.getElementById('sign-position').value = '';
-      document.getElementById('sign-name').value = '';
-      if (found.type === 'internal' && state.roster.length > 0) setupRosterAutocomplete();
-      showScreen('screen-sign-form');
-    } else {
-      showUserFlow();
-      document.getElementById('user-event-list').innerHTML =
-        '<div style="text-align:center;padding:36px;color:#E84444;font-size:14px;line-height:1.8;">⚠️ 행사 정보를 찾을 수 없습니다.<br><span style="color:#94A3B8;font-size:13px;">관리자에게 새 QR 링크를 요청해주세요.</span></div>';
-    }
-  }
+  const tid=params.get('t');
+  if(tid){const f=state.trainings.find(x=>x.id===tid);if(f)selectTraining(f.id);else{showUserFlow();document.getElementById('user-training-list').innerHTML='<div style="text-align:center;padding:36px;color:#E84444;">⚠️ 행사 정보를 찾을 수 없습니다.<br><span style="color:#94A3B8;font-size:13px;">관리자에게 새 QR을 요청하세요.</span></div>'}}
 })();
 </script>
 </body>
