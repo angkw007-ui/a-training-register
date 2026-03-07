@@ -37,7 +37,7 @@
 
         /* 관리자 화면 공통 */
         #screen-admin { background: var(--g50); min-height: 100vh; }
-        .admin-header { background: white; border-bottom: 1px solid var(--g200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; sticky; top: 0; z-index: 100; }
+        .admin-header { background: white; border-bottom: 1px solid var(--g200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
         .admin-content { padding: 24px; max-width: 1000px; margin: 0 auto; width: 100%; }
         .card { background: white; border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
         .card-title { font-size: 17px; font-weight: 800; border-left: 4px solid var(--blue); padding-left: 12px; margin-bottom: 20px; }
@@ -56,6 +56,7 @@
         .ev-meta { font-size: 12px; color: var(--g500); }
         .badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-right: 5px; }
         .badge-blue { background: #E3F2FD; color: #1565C0; }
+        .badge-green { background: #E8F5ED; color: #2E7D48; }
 
         /* 서명 캔버스 */
         .canvas-wrap { background: white; border: 2px dashed var(--g300); border-radius: 12px; overflow: hidden; margin: 15px 0; touch-action: none; position: relative; }
@@ -87,16 +88,25 @@
         .btn-copy { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid white; padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; }
 
         /* 인쇄 및 PDF 영역 (화면에서 숨김) */
-        #pdf-area, #qr-area { display: none; }
+        #pdf-area, #qr-area-print { display: none; }
 
         @media print {
             body * { visibility: hidden; }
-            #pdf-area, #pdf-area * { visibility: visible !important; }
+            #pdf-area, #pdf-area *, #qr-area-print, #qr-area-print * { visibility: visible !important; }
             #pdf-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+            #qr-area-print { display: flex !important; position: absolute; left: 0; top: 0; width: 100%; }
         }
 
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 24px; border-radius: 50px; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 4000; pointer-events: none; }
         .toast.show { opacity: 1; bottom: 50px; }
+
+        /* 자동완성 목록 스타일 */
+        .autocomplete-items {
+            position: absolute; border: 1px solid var(--g200); border-top: none; z-index: 99; top: 100%; left: 0; right: 0;
+            background-color: #fff; border-radius: 0 0 10px 10px; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--g100); font-size: 14px; }
+        .autocomplete-items div:hover { background-color: var(--g100); }
     </style>
 </head>
 <body>
@@ -161,11 +171,14 @@
     <div class="admin-content">
         <div class="card">
             <div class="card-title">정보 입력</div>
+            <div style="position:relative; margin-bottom:12px;">
+                <input type="text" id="u-name" class="form-input" placeholder="성명을 입력하세요 (내부 행사는 자동완성 지원)" autocomplete="off">
+                <div id="autocomplete-list" class="autocomplete-items"></div>
+            </div>
             <div class="form-row">
                 <input type="text" id="u-dept" class="form-input" placeholder="소속 (예: OO초등학교)">
                 <input type="text" id="u-pos" class="form-input" placeholder="직위 (예: 교사, 주무관)">
             </div>
-            <input type="text" id="u-name" class="form-input" placeholder="성명">
         </div>
 
         <div class="card">
@@ -190,7 +203,8 @@
     <div class="admin-content">
         <div class="admin-tabs">
             <button id="tab-btn-1" class="admin-tab-btn active" onclick="switchTab(1)">행사 관리</button>
-            <button id="tab-btn-2" class="admin-tab-btn" onclick="switchTab(2)">동기화 설정</button>
+            <button id="tab-btn-2" class="admin-tab-btn" onclick="switchTab(2)">명부 관리</button>
+            <button id="tab-btn-3" class="admin-tab-btn" onclick="switchTab(3)">동기화 설정</button>
         </div>
 
         <!-- 탭 1: 행사 관리 -->
@@ -204,14 +218,20 @@
                     <button class="category-btn" onclick="setCat(this, '기타')">기타</button>
                 </div>
                 <div class="form-row">
+                    <select id="f-type" class="form-input" onchange="toggleStaffUpload(this.value)">
+                        <option value="외부">외부 행사 (누구나 서명)</option>
+                        <option value="내부">내부 행사 (교직원 자동완성)</option>
+                    </select>
                     <input type="text" id="f-title" class="form-input" placeholder="행사 제목">
-                    <input type="text" id="f-loc" class="form-input" placeholder="장소">
                 </div>
                 <div class="form-row">
+                    <input type="text" id="f-loc" class="form-input" placeholder="장소">
                     <input type="date" id="f-date" class="form-input">
-                    <input type="text" id="f-time" class="form-input" placeholder="시간 (예: 14:00~)">
                 </div>
-                <button class="btn-primary" style="width:100%" onclick="addEvent()">등록하기</button>
+                <div class="form-row">
+                    <input type="text" id="f-time" class="form-input" placeholder="시간 (예: 14:00~)">
+                    <button class="btn-primary" style="width:100%" onclick="addEvent()">등록하기</button>
+                </div>
             </div>
 
             <div id="admin-event-list">
@@ -219,15 +239,38 @@
             </div>
         </div>
 
-        <!-- 탭 2: 동기화 설정 -->
+        <!-- 탭 2: 명부 관리 -->
         <div id="tab-2" class="tab-panel">
             <div class="card">
-                <div class="card-title">구글 스프레드시트 연동</div>
+                <div class="card-title">교직원 명부 관리</div>
                 <p style="font-size:13px; color:var(--g500); margin-bottom:15px">
-                    구글 앱스 스크립트(GAS)를 통해 데이터를 안전하게 클라우드에 보관할 수 있습니다.
+                    CSV 형식 또는 텍스트로 명부를 등록하세요. 내부 행사 서명 시 자동완성에 사용됩니다.<br>
+                    형식: <b>성명, 소속, 직위</b> (한 줄에 한 명씩)
                 </p>
+                <textarea id="staff-raw" class="form-input" style="height:150px; margin-bottom:15px;" placeholder="홍길동, OO초등학교, 교사&#10;임꺽정, OO초등학교, 주무관"></textarea>
+                <div style="display:flex; gap:10px">
+                    <button class="btn-primary" style="flex:1" onclick="saveStaff()">명부 업데이트</button>
+                    <button class="btn-secondary" onclick="clearStaff()">전체 삭제</button>
+                </div>
+                <div style="margin-top:20px; font-size:13px; color:var(--accent-dk)">
+                    현재 등록된 인원: <span id="staff-count">0</span>명
+                </div>
+            </div>
+        </div>
+
+        <!-- 탭 3: 동기화 설정 -->
+        <div id="tab-3" class="tab-panel">
+            <div class="card">
+                <div class="card-title">구글 스프레드시트 연동 가이드</div>
+                <ol style="font-size:13px; color:var(--g700); padding-left:20px; line-height:1.8; margin-bottom:20px;">
+                    <li>구글 스프레드시트 생성 후 [확장 프로그램] -> [Apps Script] 클릭</li>
+                    <li>아래의 코드를 복사하여 스크립트 편집기에 붙여넣기</li>
+                    <li>상단 [배포] -> [새 배포] -> 유형: 웹 앱</li>
+                    <li>액세스 권한: <b>모든 사용자(Anyone)</b>로 설정 후 배포</li>
+                    <li>생성된 웹 앱 URL을 아래에 입력</li>
+                </ol>
                 <input type="text" id="gas-url" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" style="margin-bottom:10px">
-                <button class="btn-primary" style="width:100%" onclick="saveGasUrl()">설정 저장 및 연결 테스트</button>
+                <button class="btn-primary" style="width:100%" onclick="saveGasUrl()">설정 저장</button>
                 
                 <div class="code-blk" id="gas-code-area">
                     <button class="btn-copy" onclick="copyGasCode()">코드 복사</button>
@@ -259,10 +302,10 @@
 </div>
 
 <!-- QR 코드 출력용 -->
-<div id="qr-area">
-    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:white; text-align:center; padding:50px;">
+<div id="qr-area-print">
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:white; text-align:center; padding:50px; width:100%;">
         <h1 id="qr-title" style="font-size:32px; margin-bottom:20px;">행사 제목</h1>
-        <div id="qr-gen" style="margin:30px 0;"></div>
+        <div id="qr-gen" style="margin:30px 0; background:white; padding:20px; border:1px solid #eee;"></div>
         <p style="font-size:24px; font-weight:800; color:var(--blue)">스마트폰 카메라로 스캔하여 서명하세요</p>
         <p style="margin-top:20px; font-size:16px; color:#666">전라남도교육청 등록부 지원 서비스</p>
     </div>
@@ -273,6 +316,7 @@
     let state = {
         events: JSON.parse(localStorage.getItem('ev_data') || '[]'),
         signatures: JSON.parse(localStorage.getItem('sig_data') || '[]'),
+        staff: JSON.parse(localStorage.getItem('staff_data') || '[]'),
         gasUrl: localStorage.getItem('gas_url') || '',
         currentCat: '연수',
         selectedEventId: null
@@ -287,7 +331,12 @@
         window.scrollTo(0, 0);
     }
 
-    function goHome() { show('screen-main'); }
+    function goHome() { 
+        const url = new URL(window.location.href);
+        url.searchParams.delete('target');
+        window.history.replaceState({}, '', url.pathname);
+        show('screen-main'); 
+    }
 
     function openModal(id) { $(id).classList.add('active'); }
     function closeModal(id) { $(id).classList.remove('active'); }
@@ -301,10 +350,11 @@
 
     // --- 관리자 로직 ---
     function checkLogin() {
-        if ($('admin-pw').value === '1234') { // 기본 비밀번호 1234
+        if ($('admin-pw').value === '1234') {
             closeModal('modal-login');
             show('screen-admin');
             renderAdminEvents();
+            updateStaffCount();
             $('admin-pw').value = '';
         } else {
             toast('비밀번호가 틀렸습니다.');
@@ -316,7 +366,7 @@
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         $(`tab-btn-${idx}`).classList.add('active');
         $(`tab-${idx}`).classList.add('active');
-        if(idx === 2) renderGasCode();
+        if(idx === 3) renderGasCode();
     }
 
     function setCat(btn, cat) {
@@ -333,6 +383,7 @@
             id: 'ev_' + Date.now(),
             title: title,
             cat: state.currentCat,
+            type: $('f-type').value,
             loc: $('f-loc').value || '미지정',
             date: $('f-date').value || new Date().toISOString().split('T')[0],
             time: $('f-time').value || '',
@@ -357,16 +408,18 @@
     function renderAdminEvents() {
         const container = $('admin-event-list');
         if (state.events.length === 0) {
-            container.innerHTML = '<div class="empty-list" style="text-align:center; padding:40px; color:#999">등록된 행사가 없습니다.</div>';
+            container.innerHTML = '<div style="text-align:center; padding:40px; color:#999">등록된 행사가 없습니다.</div>';
             return;
         }
 
         container.innerHTML = state.events.map(ev => {
             const sigCount = state.signatures.filter(s => s.eventId === ev.id).length;
+            const typeBadge = ev.type === '내부' ? 'badge-green' : 'badge-blue';
             return `
                 <div class="ev-item">
                     <div class="ev-info">
-                        <span class="badge badge-blue">${ev.cat}</span>
+                        <span class="badge ${typeBadge}">${ev.type}</span>
+                        <span class="badge">${ev.cat}</span>
                         <h3>${ev.title}</h3>
                         <div class="ev-meta">📍 ${ev.loc} | 📅 ${ev.date} ${ev.time}</div>
                         <div style="margin-top:5px; color:var(--blue); font-weight:700">서명 인원: ${sigCount}명</div>
@@ -381,18 +434,51 @@
         }).join('');
     }
 
-    // --- 사용자 로직 ---
+    // --- 명부 관리 로직 ---
+    function saveStaff() {
+        const raw = $('staff-raw').value.trim();
+        if (!raw) return toast('데이터를 입력하세요.');
+
+        const lines = raw.split('\n');
+        const parsed = lines.map(line => {
+            const [name, dept, pos] = line.split(',').map(s => s.trim());
+            return { name, dept, pos };
+        }).filter(p => p.name && p.dept);
+
+        state.staff = parsed;
+        localStorage.setItem('staff_data', JSON.stringify(state.staff));
+        updateStaffCount();
+        toast('명부가 업데이트 되었습니다.');
+    }
+
+    function clearStaff() {
+        if(!confirm('정말 전체 명부를 삭제하시겠습니까?')) return;
+        state.staff = [];
+        localStorage.removeItem('staff_data');
+        $('staff-raw').value = '';
+        updateStaffCount();
+        toast('명부가 삭제되었습니다.');
+    }
+
+    function updateStaffCount() {
+        $('staff-count').innerText = state.staff.length;
+        if(state.staff.length > 0) {
+            $('staff-raw').value = state.staff.map(s => `${s.name}, ${s.dept}, ${s.pos}`).join('\n');
+        }
+    }
+
+    // --- 사용자 서명 로직 ---
     function showUserFlow() {
         show('screen-user-list');
         const container = $('user-event-list');
         if (state.events.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:50px; color:#999">현재 진행 중인 행사가 없습니다.</div>';
+            container.innerHTML = '<div style="text-align:center; padding:50px; color:#999">진행 중인 행사가 없습니다.</div>';
             return;
         }
 
         container.innerHTML = state.events.map(ev => `
-            <div class="card" onclick="selectEvent('${ev.id}')" style="cursor:pointer; border-left:6px solid var(--accent)">
-                <div style="font-size:12px; color:var(--g500)">${ev.date} ${ev.time}</div>
+            <div class="card" onclick="selectEvent('${ev.id}')" style="cursor:pointer; border-left:6px solid ${ev.type==='내부'?'var(--accent)':'var(--blue)'}">
+                <div style="font-size:12px; color:var(--g500)">[${ev.type}] ${ev.date} ${ev.time}</div>
                 <h3 style="margin:5px 0">${ev.title}</h3>
                 <div style="font-size:13px; color:var(--g700)">장소: ${ev.loc}</div>
             </div>
@@ -402,9 +488,42 @@
     function selectEvent(id) {
         state.selectedEventId = id;
         const ev = state.events.find(e => e.id === id);
+        if(!ev) return goHome();
+        
         $('sign-event-title').innerText = ev.title;
         show('screen-sign');
         initCanvas();
+        setupAutocomplete(ev.type === '내부');
+    }
+
+    // --- 자동완성 로직 ---
+    function setupAutocomplete(isInternal) {
+        const input = $('u-name');
+        const list = $('autocomplete-list');
+        
+        input.oninput = function() {
+            const val = this.value;
+            list.innerHTML = '';
+            if (!val || !isInternal) return;
+
+            const matches = state.staff.filter(s => s.name.includes(val)).slice(0, 5);
+            matches.forEach(match => {
+                const div = document.createElement('div');
+                div.innerHTML = `<strong>${match.name}</strong> (${match.dept} / ${match.pos})`;
+                div.onclick = function() {
+                    input.value = match.name;
+                    $('u-dept').value = match.dept;
+                    $('u-pos').value = match.pos;
+                    list.innerHTML = '';
+                };
+                list.appendChild(div);
+            });
+        };
+
+        // 외부 클릭 시 리스트 닫기
+        document.addEventListener('click', (e) => {
+            if (e.target !== input) list.innerHTML = '';
+        });
     }
 
     // --- 서명 캔버스 로직 ---
@@ -413,13 +532,10 @@
     function initCanvas() {
         canvas = $('sig-canvas');
         ctx = canvas.getContext('2d');
-        
-        // 고해상도 대응
         const ratio = window.devicePixelRatio || 1;
         canvas.width = canvas.offsetWidth * ratio;
         canvas.height = canvas.offsetHeight * ratio;
         ctx.scale(ratio, ratio);
-
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
@@ -431,17 +547,16 @@
             return { x: clientX - rect.left, y: clientY - rect.top };
         };
 
-        const start = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-        const move = (e) => { if(!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-        const stop = () => { drawing = false; };
-
-        canvas.onmousedown = start; canvas.onmousemove = move; window.onmouseup = stop;
-        canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = stop;
+        canvas.onmousedown = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+        canvas.onmousemove = (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+        window.onmouseup = () => { drawing = false; };
+        
+        canvas.ontouchstart = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+        canvas.ontouchmove = (e) => { if(!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+        canvas.ontouchend = () => { drawing = false; };
     }
 
-    function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
     async function submitSignature() {
         const name = $('u-name').value.trim();
@@ -450,7 +565,6 @@
 
         if (!name || !dept) return toast('소속과 성명을 입력하세요.');
         
-        // 빈 캔버스 체크 (픽셀 데이터 확인)
         const blank = document.createElement('canvas');
         blank.width = canvas.width; blank.height = canvas.height;
         if (canvas.toDataURL() === blank.toDataURL()) return toast('서명을 해주세요.');
@@ -468,7 +582,6 @@
         state.signatures.push(sigData);
         saveData();
 
-        // GAS 동기화 시도
         if (state.gasUrl) {
             try {
                 await fetch(state.gasUrl, {
@@ -481,14 +594,10 @@
 
         setTimeout(() => {
             $('loading').style.display = 'none';
-            toast('서명이 완료되었습니다. 감사합니다.');
-            clearInputs();
+            toast('서명이 완료되었습니다.');
+            $('u-name').value = ''; $('u-dept').value = ''; $('u-pos').value = '';
             goHome();
         }, 800);
-    }
-
-    function clearInputs() {
-        $('u-name').value = ''; $('u-dept').value = ''; $('u-pos').value = '';
     }
 
     // --- 인쇄 및 QR ---
@@ -500,16 +609,17 @@
         $('print-meta').innerText = `일시: ${ev.date} ${ev.time} | 장소: ${ev.loc}`;
         
         let html = '';
-        for (let i = 0; i < Math.max(sigs.length, 15); i++) {
+        const rowCount = Math.max(sigs.length, 15);
+        for (let i = 0; i < rowCount; i++) {
             const s = sigs[i] || { dept:'', pos:'', name:'', img:'' };
             html += `
                 <tr>
-                    <td style="border:1px solid black; height:50px; text-align:center">${i+1}</td>
-                    <td style="border:1px solid black; text-align:center">${s.dept}</td>
-                    <td style="border:1px solid black; text-align:center">${s.pos}</td>
+                    <td style="border:1px solid black; height:55px; text-align:center">${i+1}</td>
+                    <td style="border:1px solid black; text-align:center; font-size:13px">${s.dept}</td>
+                    <td style="border:1px solid black; text-align:center; font-size:13px">${s.pos}</td>
                     <td style="border:1px solid black; text-align:center; font-weight:bold">${s.name}</td>
                     <td style="border:1px solid black; text-align:center">
-                        ${s.img ? `<img src="${s.img}" style="height:40px">` : ''}
+                        ${s.img ? `<img src="${s.img}" style="height:45px">` : ''}
                     </td>
                 </tr>
             `;
@@ -520,19 +630,33 @@
 
     function showQR(id) {
         const ev = state.events.find(e => e.id === id);
-        const url = window.location.href.split('?')[0] + '?target=' + id;
+        const baseUrl = window.location.origin + window.location.pathname;
+        const url = `${baseUrl}?target=${id}`;
         
         $('qr-title').innerText = ev.title;
         $('qr-gen').innerHTML = '';
-        new QRCode($('qr-gen'), {
-            text: url,
-            width: 256,
-            height: 256
-        });
         
-        $('qr-area').style.display = 'block';
-        window.print();
-        setTimeout(() => { $('qr-area').style.display = 'none'; }, 1000);
+        // QRCode 라이브러리가 완전히 로드된 후 실행되도록 지연
+        setTimeout(() => {
+            try {
+                new QRCode($('qr-gen'), {
+                    text: url,
+                    width: 280,
+                    height: 280,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                
+                // 생성 확인 후 인쇄
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            } catch (err) {
+                console.error("QR Generation failed", err);
+                toast("QR 코드 생성에 실패했습니다.");
+            }
+        }, 100);
     }
 
     // --- 데이터 저장 및 연동 ---
@@ -543,24 +667,32 @@
 
     function saveGasUrl() {
         const url = $('gas-url').value.trim();
-        if (!url.startsWith('https://')) return toast('올바른 URL을 입력하세요.');
+        if (url && !url.startsWith('https://')) return toast('올바른 URL을 입력하세요.');
         state.gasUrl = url;
         localStorage.setItem('gas_url', url);
-        toast('연동 설정이 저장되었습니다.');
+        toast('설정이 저장되었습니다.');
     }
 
     function renderGasCode() {
         const code = `function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
   var data = JSON.parse(e.postData.contents);
+  
+  // 헤더가 없는 경우 생성
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["일시", "행사ID", "소속", "직위", "성명", "서명이미지(Base64)"]);
+  }
+  
   sheet.appendRow([
-    new Date(), 
+    new Date().toLocaleString('ko-KR'), 
     data.eventId, 
     data.dept, 
     data.pos, 
     data.name, 
     data.img
   ]);
+  
   return ContentService.createTextOutput("Success");
 }`;
         $('gas-code-text').innerText = code;
@@ -568,25 +700,22 @@
 
     function copyGasCode() {
         const text = $('gas-code-text').innerText;
-        const temp = document.createElement('textarea');
-        temp.value = text;
-        document.body.appendChild(temp);
-        temp.select();
-        document.execCommand('copy');
-        document.body.removeChild(temp);
-        toast('코드가 복사되었습니다.');
+        navigator.clipboard.writeText(text).then(() => toast('코드가 복사되었습니다.'));
     }
 
     // --- 초기 실행 ---
     window.onload = () => {
-        // URL 파라미터 체크 (QR 접속 시 바로 해당 행사로)
         const params = new URLSearchParams(window.location.search);
         const target = params.get('target');
-        if (target && state.events.find(e => e.id === target)) {
-            selectEvent(target);
+        if (target) {
+            const evExists = state.events.find(e => e.id === target);
+            if (evExists) {
+                selectEvent(target);
+            } else {
+                toast("존재하지 않는 행사입니다.");
+                goHome();
+            }
         }
-        
-        // GAS URL 불러오기
         if (state.gasUrl) $('gas-url').value = state.gasUrl;
     };
 </script>
