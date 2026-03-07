@@ -1,864 +1,595 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>등록부 서명 도우미</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<style>
-:root{--blue:#3B6EEA;--blue-dark:#2A55C9;--red:#E84444;--green:#22A06B;--g50:#F8FAFC;--g100:#F1F5F9;--g200:#E2E8F0;--g300:#CBD5E1;--g400:#94A3B8;--g500:#64748B;--g700:#334155;--g900:#0F172A;--white:#FFF;--shadow:0 4px 24px rgba(59,110,234,.1);--shadow-lg:0 8px 40px rgba(59,110,234,.16);--accent:#3A9B5C;--accent-dk:#2E7D48}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR',sans-serif;background:#E8F5ED;min-height:100vh;color:var(--g900)}
-.screen{display:none}.screen.active{display:flex}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>등록부 서명 도우미</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --blue: #3B6EEA; --blue-dark: #2A55C9; --red: #E84444; --green: #22A06B;
+            --g50: #F8FAFC; --g100: #F1F5F9; --g200: #E2E8F0; --g300: #CBD5E1;
+            --g400: #94A3B8; --g500: #64748B; --g700: #334155; --g900: #0F172A;
+            --white: #FFF; --shadow: 0 4px 24px rgba(59,110,234,.1);
+            --shadow-lg: 0 8px 40px rgba(59,110,234,.16);
+            --accent: #3A9B5C; --accent-dk: #2E7D48;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: #E8F5ED; min-height: 100vh; color: var(--g900); overflow-x: hidden; }
+        .screen { display: none; }
+        .screen.active { display: flex; flex-direction: column; }
 
-/* MAIN */
-#screen-main{min-height:100vh;background:linear-gradient(145deg,#6DBF8A,#4CAF70 50%,#3A9B5C);align-items:center;justify-content:center;padding:24px}
-.main-card{background:var(--white);border-radius:28px;padding:48px 40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(30,50,120,.25);text-align:center}
-.main-title{font-size:26px;font-weight:900;line-height:1.3}.main-title span{display:block;color:var(--accent);font-size:30px}
-.main-sub{margin-top:12px;font-size:13px;color:var(--g500);line-height:1.5}
-.main-buttons{margin-top:20px;display:flex;flex-direction:column;gap:12px}
-.btn-primary{background:var(--accent);color:white;border:none;border-radius:14px;padding:18px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(58,155,92,.35)}
-.btn-primary:hover{background:var(--accent-dk);transform:translateY(-1px)}
-.btn-secondary{background:var(--g100);color:var(--g700);border:1.5px solid var(--g200);border-radius:14px;padding:16px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s}
-.btn-secondary:hover{background:var(--g200)}
-.guide-box{background:#F0FBF4;border:1.5px solid #A8DFB8;border-radius:14px;padding:18px 20px;margin-top:28px;text-align:left}
-.guide-title{font-size:13px;font-weight:800;color:var(--accent-dk);margin-bottom:10px}
-.guide-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}.guide-step:last-child{margin-bottom:0}
-.guide-num{min-width:20px;height:20px;background:var(--accent);color:white;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
-.guide-text{font-size:12.5px;color:#334155;line-height:1.55}.guide-text strong{color:var(--accent-dk)}
-.storage-indicator{margin-top:16px;font-size:11px;color:var(--g400);display:flex;align-items:center;justify-content:center;gap:5px}
-.storage-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+        /* 메인 화면 */
+        #screen-main { min-height: 100vh; background: linear-gradient(145deg, #6DBF8A, #4CAF70 50%, #3A9B5C); align-items: center; justify-content: center; padding: 24px; }
+        .main-card { background: var(--white); border-radius: 28px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(30,50,120,.25); text-align: center; }
+        .main-title { font-size: 26px; font-weight: 900; line-height: 1.3; margin-bottom: 20px; }
+        .main-title span { display: block; color: var(--accent); font-size: 30px; }
+        .main-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .btn-primary { background: var(--accent); color: white; border: none; border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all .2s; box-shadow: 0 4px 16px rgba(58,155,92,.35); }
+        .btn-secondary { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g200); border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-/* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;align-items:center;justify-content:center;padding:16px}
-.modal-overlay.active{display:flex}
-.modal{background:white;border-radius:20px;padding:32px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:mIn .25s ease}
-@keyframes mIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.modal-title{font-size:18px;font-weight:700;margin-bottom:16px}
-.modal input{width:100%;border:1.5px solid var(--g200);border-radius:10px;padding:12px 14px;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px}
-.modal input:focus{border-color:var(--blue)}
-.modal-btns{display:flex;gap:10px;margin-top:4px}
-.btn-sm-s{flex:1;background:var(--g100);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g700)}
-.btn-sm-p{flex:1;background:var(--blue);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;color:white}
+        /* 가이드 박스 */
+        .guide-box { background: #F0FBF4; border: 1.5px solid #A8DFB8; border-radius: 14px; padding: 18px; margin-bottom: 24px; text-align: left; }
+        .guide-title { font-size: 13px; font-weight: 800; color: var(--accent-dk); margin-bottom: 10px; }
+        .guide-step { display: flex; gap: 10px; margin-bottom: 8px; font-size: 12.5px; }
+        .guide-num { min-width: 20px; height: 20px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
 
-/* ADMIN */
-#screen-admin{flex-direction:column;min-height:100vh;background:var(--g50)}
-.admin-header{background:white;border-bottom:1px solid var(--g200);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.admin-header h1{font-size:20px;font-weight:800}
-.admin-header-btns{display:flex;gap:10px;align-items:center}
-.btn-logout{border:none;background:none;color:var(--g500);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;padding:8px 12px}
-.admin-content{padding:32px;max-width:1100px;margin:0 auto;width:100%}
-.card{background:white;border-radius:16px;padding:28px;box-shadow:var(--shadow);margin-bottom:24px}
-.card-title{font-size:17px;font-weight:800;padding-left:14px;border-left:4px solid var(--blue);margin-bottom:20px}
+        /* 관리자 화면 공통 */
+        #screen-admin { background: var(--g50); min-height: 100vh; }
+        .admin-header { background: white; border-bottom: 1px solid var(--g200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; sticky; top: 0; z-index: 100; }
+        .admin-content { padding: 24px; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
+        .card-title { font-size: 17px; font-weight: 800; border-left: 4px solid var(--blue); padding-left: 12px; margin-bottom: 20px; }
 
-/* SYNC BANNER */
-.sync-banner{background:linear-gradient(135deg,#FFF3E0,#FFECB3);border:2px solid #FFB74D;border-radius:16px;padding:20px 24px;margin-bottom:24px;display:none}
-.sync-banner.show{display:block}
-.sync-banner-title{font-size:15px;font-weight:800;color:#E65100;margin-bottom:8px}
-.sync-banner-text{font-size:13px;color:#5D4037;line-height:1.7}
+        /* 폼 요소 */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .form-input { width: 100%; border: 1.5px solid var(--g200); border-radius: 10px; padding: 12px; font-size: 14px; outline: none; transition: border 0.2s; }
+        .form-input:focus { border-color: var(--blue); }
+        .category-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .category-btn { padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--g200); background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--g500); }
+        .category-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-.admin-tabs{display:flex;border-bottom:2px solid var(--g200);margin-bottom:24px;gap:4px}
-.admin-tab-btn{padding:10px 20px;border:none;background:none;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g500);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
-.admin-tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
-.admin-tab-panel{display:none}.admin-tab-panel.active{display:block}
+        /* 리스트 아이템 */
+        .ev-item { background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .ev-info h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .ev-meta { font-size: 12px; color: var(--g500); }
+        .badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-right: 5px; }
+        .badge-blue { background: #E3F2FD; color: #1565C0; }
 
-/* FORM */
-.category-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.category-btn{padding:10px 18px;border-radius:24px;border:1.5px solid var(--g200);background:white;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g500);transition:all .2s}
-.category-btn.active{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 2px 8px rgba(58,155,92,.3)}
-.type-tabs{display:flex;gap:10px;margin-bottom:20px}
-.tab-btn{flex:1;padding:14px;border-radius:10px;border:1.5px solid var(--g200);background:white;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;color:var(--g500)}
-.tab-btn.active{background:#EEF2FF;border-color:var(--blue);color:var(--blue)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.form-input{border:1.5px solid var(--g200);border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;width:100%;color:var(--g900)}
-.form-input:focus{border-color:var(--blue)}.form-input::placeholder{color:var(--g300)}
-.checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;color:var(--g700);cursor:pointer;font-weight:500}
-.checkbox-row input{width:15px;height:15px;accent-color:var(--blue)}
-.btn-register{width:100%;background:var(--blue);color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer}
-.btn-register:hover{background:var(--blue-dark)}
+        /* 서명 캔버스 */
+        .canvas-wrap { background: white; border: 2px dashed var(--g300); border-radius: 12px; overflow: hidden; margin: 15px 0; touch-action: none; position: relative; }
+        #sig-canvas { width: 100%; height: 250px; cursor: crosshair; }
 
-/* LIST */
-.list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.list-title{font-size:17px;font-weight:800}
-.btn-refresh{border:1.5px solid var(--g200);background:white;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g500);display:flex;align-items:center;gap:5px}
-.ev-item{background:white;border-radius:12px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 1px 8px rgba(0,0,0,.06);margin-bottom:10px;flex-wrap:wrap}
-.ev-info{flex:1;min-width:200px}
-.ev-badges{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
-.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
-.badge-cat{background:#E3F2FD;color:#1565C0}.badge-ext{background:#FFF3E0;color:#E65100}.badge-int{background:#E8F5E9;color:#2E7D32}
-.ev-name{font-size:16px;font-weight:700}
-.ev-meta{font-size:12px;color:var(--g500);margin-top:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.ev-meta span{display:flex;align-items:center;gap:4px}
-.sig-count{color:var(--blue);font-weight:700}
-.ev-actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn-a{border:1.5px solid var(--g200);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g700);transition:all .2s}
-.btn-a:hover{border-color:var(--blue);color:var(--blue)}
-.btn-a-g{border-color:var(--green);color:var(--green)}.btn-a-b{border-color:var(--blue);color:var(--blue)}.btn-a-r{border-color:var(--red);color:var(--red)}
-.btn-a-sync{border-color:#FF9800;color:#E65100;background:#FFF8E1;font-weight:700}
-.empty-list{text-align:center;padding:40px;color:var(--g400);font-size:14px}
+        /* 모달 및 로딩 */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 20px; padding: 30px; width: 100%; max-width: 360px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        
+        .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--g200); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ROSTER */
-.roster-info{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.roster-btns{display:flex;gap:8px;flex-wrap:wrap}
-.btn-d-o{border:1.5px solid var(--red);color:var(--red);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
-.btn-g-o{border:1.5px solid var(--green);color:var(--green);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
-.btn-b-o{border:1.5px solid var(--blue);color:var(--blue);background:white;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+        /* 탭 */
+        .admin-tabs { display: flex; border-bottom: 2px solid var(--g200); margin-bottom: 20px; }
+        .admin-tab-btn { padding: 12px 20px; border: none; background: none; font-weight: 700; color: var(--g400); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .admin-tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
-/* USER */
-#screen-user{flex-direction:column;min-height:100vh;background:var(--g50);align-items:center;justify-content:flex-start;padding:32px 16px}
-.user-header{width:100%;max-width:480px;display:flex;align-items:center;margin-bottom:20px;gap:12px}
-.btn-back{background:white;border:1.5px solid var(--g200);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g500);flex-shrink:0}
-.user-title{font-size:22px;font-weight:800;text-align:center;flex:1}
-.ev-sel-card{background:white;border-radius:14px;padding:20px 22px;width:100%;max-width:480px;cursor:pointer;border:2px solid transparent;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:all .2s;margin-bottom:10px;border-left:5px solid var(--blue)}
-.ev-sel-card:hover{border-color:var(--blue);transform:translateY(-1px)}
-.ev-sel-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:#E3F2FD;color:#1565C0;margin-bottom:6px}
-.ev-sel-date{font-size:12px;color:var(--g400);margin-bottom:6px}
-.ev-sel-name{font-size:18px;font-weight:800}
-.ev-sel-loc{font-size:13px;color:var(--g500);margin-top:4px}
+        /* 유틸리티 */
+        .btn-a { border: 1.5px solid var(--g200); background: white; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-left: 5px; }
+        .btn-a-blue { color: var(--blue); border-color: var(--blue); }
+        .btn-a-red { color: var(--red); border-color: var(--red); }
+        .btn-a-green { color: var(--green); border-color: var(--green); }
+        
+        .code-blk { background: #1E2A3A; color: #A8D8A8; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; overflow-x: auto; position: relative; white-space: pre-wrap; margin: 10px 0; }
+        .btn-copy { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid white; padding: 2px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; }
 
-/* SIGN FORM */
-#screen-sign-form{flex-direction:column;min-height:100vh;background:var(--g100);align-items:center;justify-content:center;padding:24px}
-.sf-card{background:white;border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:var(--shadow-lg)}
-.sf-name{font-size:20px;font-weight:800;text-align:center;margin-bottom:8px}
-.sf-detail{font-size:13px;color:var(--g500);text-align:center;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--g100);line-height:1.6}
-.sf-input{border:1.5px solid var(--g200);border-radius:12px;padding:14px 16px;font-size:15px;font-family:inherit;outline:none;width:100%;margin-bottom:12px;color:var(--g900)}
-.sf-input:focus{border-color:var(--blue)}.sf-input::placeholder{color:var(--g300)}
-.btn-confirm{width:100%;background:var(--blue);color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:8px}
+        /* 인쇄 및 PDF 영역 (화면에서 숨김) */
+        #pdf-area, #qr-area { display: none; }
 
-/* SIGNATURE */
-#screen-signature{flex-direction:column;min-height:100vh;background:rgba(15,23,42,.6);align-items:center;justify-content:center;padding:24px}
-.sig-card{background:var(--g50);border-radius:20px;padding:28px 28px 32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.sig-label{font-size:12px;color:var(--g400);text-align:center}
-.sig-ev-name{font-size:14px;font-weight:700;color:var(--g700);text-align:center;margin-top:2px}
-.sig-person{font-size:22px;font-weight:800;color:var(--blue);text-align:center;margin-top:12px}
-.sig-instr{font-size:13px;color:var(--red);text-align:center;margin-top:8px;margin-bottom:16px;font-weight:500}
-.sig-tabs{display:flex;background:var(--g100);border-radius:10px;padding:4px;margin-bottom:14px;gap:4px}
-.sig-tab{flex:1;border:none;background:transparent;border-radius:8px;padding:9px 6px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g500);display:flex;align-items:center;justify-content:center;gap:5px}
-.sig-tab.active{background:white;color:var(--blue);box-shadow:0 1px 6px rgba(0,0,0,.1)}
-.canvas-wrap{border:2px dashed var(--g300);border-radius:12px;background:white;overflow:hidden;cursor:crosshair}
-#sig-canvas{display:block;width:100%;height:200px;touch-action:none}
-.upload-wrap{display:flex;border:2px dashed var(--g300);border-radius:12px;background:white;min-height:200px;align-items:center;justify-content:center;flex-direction:column;gap:10px;cursor:pointer;position:relative;overflow:hidden}
-.upload-wrap.dragover{border-color:var(--blue);background:#EEF2FF}
-.upload-wrap.has-img{border-style:solid;border-color:var(--g200)}
-#upload-preview{width:100%;height:200px;object-fit:contain;display:none;padding:8px}
-.upload-change{position:absolute;bottom:8px;right:8px;background:var(--blue);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;display:none}
-#upload-input{display:none}
-.sig-acts{display:flex;gap:10px;margin-top:16px}
-.btn-clr,.btn-cancel{border:1.5px solid var(--g300);background:white;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g700);flex:1}
-.btn-done{background:var(--blue);border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;color:white;flex:2}
+        @media print {
+            body * { visibility: hidden; }
+            #pdf-area, #pdf-area * { visibility: visible !important; }
+            #pdf-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
 
-/* SUCCESS */
-#screen-success{flex-direction:column;min-height:100vh;background:var(--g50);align-items:center;justify-content:center;padding:24px;text-align:center}
-.suc-icon{width:80px;height:80px;background:#E8F5E9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px}
-.suc-title{font-size:24px;font-weight:800}
-.suc-sub{font-size:14px;color:var(--g500);margin-top:8px}
-.btn-home{margin-top:32px;background:var(--blue);color:white;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}
-
-/* RESULT */
-.rtype-btn{padding:8px 16px;border-radius:20px;border:1.5px solid var(--g200);background:white;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--g500)}
-.rtype-btn.active{background:var(--blue);border-color:var(--blue);color:white}
-
-/* PRINT */
-#pdf-area{display:none}
-.rf-wrap{font-family:'Noto Sans KR',sans-serif;background:white}
-.rf-title{text-align:center;font-size:22px;font-weight:900;margin-bottom:8px;letter-spacing:3px}
-.rf-meta{text-align:center;font-size:15px;font-weight:600;color:#333;margin-bottom:18px}
-.rf-table{width:100%;border-collapse:collapse;font-size:14px}
-.rf-table th,.rf-table td{border:1px solid #444;padding:0;text-align:center;vertical-align:middle}
-.rf-table th{background:#EEF4FF;font-weight:700;padding:9px 4px}
-.rf-table td{height:58px}
-.rf-table .c-num{width:34px;font-size:12px;color:#888}.rf-table .c-dept{width:90px}.rf-table .c-pos{width:80px}.rf-table .c-name{width:80px;font-weight:700}.rf-table .c-sig{min-width:160px}.rf-table .c-rem{width:80px}
-.sig-img{max-width:140px;max-height:48px;object-fit:contain;display:block;margin:auto}
-.rf-footer{margin-top:12px;font-size:11px;color:#bbb;text-align:right}
-@media print{body *{visibility:hidden}#pdf-area,#pdf-area *{visibility:visible!important}#pdf-area{display:block!important;position:fixed;left:0;top:0;width:100%;z-index:99999;background:white}#qr-area.printing,#qr-area.printing *{visibility:visible!important}#qr-area.printing{display:block!important;position:fixed;left:0;top:0;width:100%;z-index:99999;background:white}}
-
-/* GAS SETUP */
-.gas-card{background:white;border-radius:16px;box-shadow:var(--shadow);margin-bottom:24px;overflow:hidden}
-.gas-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;cursor:pointer;user-select:none}
-.gas-hdr.open{border-bottom:1px solid var(--g100)}
-.gas-hdr-left{display:flex;align-items:center;gap:12px}
-.gas-dot{width:10px;height:10px;border-radius:50%;background:var(--g300);flex-shrink:0}.gas-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(34,160,107,.2)}
-.gas-title{font-size:16px;font-weight:800}.gas-sub{font-size:12px;color:var(--g400);margin-top:2px}
-.gas-arrow{font-size:18px;color:var(--g400);transition:transform .2s}.gas-arrow.open{transform:rotate(180deg)}
-.gas-body{display:none;padding:24px 28px}.gas-body.open{display:block}
-.s-steps{display:flex;flex-direction:column}.s-step{display:flex;gap:16px;padding-bottom:28px}.s-step:last-child{padding-bottom:0}
-.s-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
-.s-num{width:32px;height:32px;background:var(--blue);color:white;border-radius:50%;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center}
-.s-line{width:2px;flex:1;background:var(--g200);margin-top:6px;min-height:20px}.s-step:last-child .s-line{display:none}
-.s-content{flex:1;padding-top:4px}
-.s-stitle{font-size:14px;font-weight:700;margin-bottom:6px}
-.s-desc{font-size:13px;color:var(--g500);line-height:1.6;margin-bottom:10px}
-.s-desc strong{color:var(--blue)}
-.code-blk{background:#1E2A3A;border-radius:10px;padding:14px 16px;font-family:'Courier New',monospace;font-size:11.5px;color:#A8D8A8;line-height:1.7;position:relative;margin-bottom:10px;white-space:pre-wrap;word-break:break-all;max-height:340px;overflow-y:auto}
-.btn-copy{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:white;cursor:pointer;font-family:inherit}
-.url-wrap{display:flex;gap:8px;margin-top:8px}
-.url-input{flex:1;border:1.5px solid var(--g200);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;outline:none;color:var(--g900)}
-.url-input:focus{border-color:var(--blue)}.url-input::placeholder{color:var(--g300)}
-.btn-conn{background:var(--blue);color:white;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap}
-.conn-box{border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;margin-top:10px;display:none}
-.conn-box.ok{background:#E8F5E9;color:#2E7D32;display:block}.conn-box.err{background:#FFEBEE;color:#C62828;display:block}
-.btn-sync{background:#22A06B;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;margin-top:12px}
-.sync-box{border-radius:10px;padding:12px 16px;font-size:13px;margin-top:8px;display:none;line-height:1.5}.sync-box.show{display:block}.sync-box.ok{background:#E8F5E9;color:#2E7D32}.sync-box.fail{background:#FFEBEE;color:#C62828}
-
-/* QR */
-.qr-body{display:flex;flex-direction:column;gap:20px}
-.qr-sec{border:1.5px solid var(--g200);border-radius:14px;padding:18px 20px}
-.qr-sec-title{font-size:14px;font-weight:800;margin-bottom:14px}
-.qr-url{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--g500);word-break:break-all;margin-bottom:10px;font-family:monospace}
-.qr-wrap{display:flex;justify-content:center;margin:10px 0}
-.qr-acts{display:flex;gap:8px;flex-wrap:wrap}
-#qr-area{display:none}
-.qr-poster{width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:white;padding:40px 30px;text-align:center;font-family:'Noto Sans KR',sans-serif}
-.qr-p-title{font-size:34px;font-weight:900;margin-bottom:6px;line-height:1.3}
-.qr-p-date{font-size:18px;color:#555;margin-bottom:36px}
-.qr-p-instr{font-size:28px;font-weight:900;color:var(--accent-dk);background:#E8F5ED;border-radius:16px;padding:20px 36px;margin-bottom:36px;line-height:1.5}
-
-/* LOADING */
-.loading{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
-.spinner{width:40px;height:40px;border:4px solid var(--g200);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:14px;font-weight:600;color:var(--g700)}
-
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g900);color:white;padding:12px 24px;border-radius:100px;font-size:14px;font-weight:500;opacity:0;transition:all .3s;z-index:9999;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-@media(max-width:600px){.admin-header{padding:14px 16px}.admin-content{padding:16px}.form-row{grid-template-columns:1fr}.ev-item{flex-direction:column;align-items:flex-start}.category-tabs{gap:6px}.category-btn{padding:8px 14px;font-size:13px}}
-</style>
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 24px; border-radius: 50px; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 4000; pointer-events: none; }
+        .toast.show { opacity: 1; bottom: 50px; }
+    </style>
 </head>
 <body>
 
+<!-- 로딩 오버레이 -->
+<div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <div style="margin-top:15px; font-weight:700; color:var(--g700)">처리 중...</div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" class="toast">메시지</div>
+
+<!-- 메인 화면 -->
 <div id="screen-main" class="screen active">
-<div class="main-card">
-  <div class="main-title">등록부<span>서명 도우미</span></div>
-  <div class="main-sub">연수 · 회의 · 위원회 등<br>각종 등록부 서명을 간편하게!</div>
-  <div class="guide-box">
-    <div class="guide-title">📋 서명 안내</div>
-    <div class="guide-step"><div class="guide-num">1</div><div class="guide-text"><strong>서명하기</strong> 버튼을 누르세요.</div></div>
-    <div class="guide-step"><div class="guide-num">2</div><div class="guide-text">해당 <strong>행사</strong>를 선택하세요.</div></div>
-    <div class="guide-step"><div class="guide-num">3</div><div class="guide-text"><strong>소속 · 직위 · 성명</strong>을 입력하세요.</div></div>
-    <div class="guide-step"><div class="guide-num">4</div><div class="guide-text"><strong>직접 서명</strong>하거나 이미지를 <strong>업로드</strong>하세요.</div></div>
-    <div class="guide-step"><div class="guide-num">5</div><div class="guide-text"><strong>서명 완료</strong> 누르면 끝! ✅</div></div>
-  </div>
-  <div class="main-buttons">
-    <button class="btn-primary" onclick="userFlow()">✍️ 서명하기</button>
-    <button class="btn-secondary" onclick="adminLoginModal()">관리자 모드</button>
-  </div>
-  <div class="storage-indicator"><div class="storage-dot"></div>구글 시트 + 로컬 저장</div>
-</div>
-</div>
-
-<div id="modal-login" class="modal-overlay"><div class="modal"><div class="modal-title">🔒 관리자 확인</div><input type="password" id="pw-input" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')doLogin()"><div class="modal-btns"><button class="btn-sm-s" onclick="closeM('modal-login')">취소</button><button class="btn-sm-p" onclick="doLogin()">확인</button></div></div></div>
-
-<div id="screen-admin" class="screen">
-<div class="admin-header"><h1>관리자 대시보드</h1><div class="admin-header-btns"><button class="btn-a btn-a-sync" id="btn-refresh-all" onclick="refreshFromSheets()" style="display:none">🔄 시트에서 전체 동기화</button><button class="btn-logout" onclick="goMain()">나가기</button></div></div>
-<div class="admin-content">
-  <div class="sync-banner" id="sync-banner"><div class="sync-banner-title">⚠️ 구글 시트 연동이 필요합니다!</div><div class="sync-banner-text">QR/링크로 서명받으면 <strong>모바일 서명이 이 PC에 자동으로 보이지 않습니다.</strong><br><strong>구글 시트 연동</strong>을 설정하면 여러 관리자가 동시에 사용할 수 있고, 모바일 서명도 자동 수집됩니다.</div></div>
-  <div class="admin-tabs">
-    <button class="admin-tab-btn active" onclick="switchTab('tab-manage')">📋 행사 관리</button>
-    <button class="admin-tab-btn" onclick="switchTab('tab-sheets')">📊 구글 시트 연동</button>
-    <button class="admin-tab-btn" onclick="switchTab('tab-roster')">👥 명단 관리</button>
-  </div>
-
-  <div id="tab-manage" class="admin-tab-panel active">
-    <div class="card">
-      <div class="card-title">새 행사 등록</div>
-      <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:var(--g700)">행사 유형</div>
-      <div class="category-tabs" id="cat-tabs"><button class="category-btn active" onclick="pickCat(this,'연수')">📖 연수</button><button class="category-btn" onclick="pickCat(this,'회의')">🗣️ 회의</button><button class="category-btn" onclick="pickCat(this,'위원회')">🏛️ 위원회</button><button class="category-btn" onclick="pickCat(this,'협의회')">🤝 협의회</button><button class="category-btn" onclick="pickCat(this,'기타')">📝 기타</button></div>
-      <div id="custom-cat-wrap" style="display:none;margin-bottom:12px"><input type="text" class="form-input" id="custom-cat" placeholder="유형 직접 입력"></div>
-      <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:var(--g700)">공개 범위</div>
-      <div class="type-tabs"><button class="tab-btn active" id="tab-int" onclick="pickScope('internal')">🏫 내부</button><button class="tab-btn" id="tab-ext" onclick="pickScope('external')">🌐 외부</button></div>
-      <div class="form-row"><input type="text" class="form-input" id="f-name" placeholder="행사명"><input type="text" class="form-input" id="f-loc" placeholder="장소"></div>
-      <div class="form-row"><input type="date" class="form-input" id="f-date"><input type="text" class="form-input" id="f-time" placeholder="시간 (예: 15:00~17:00)"></div>
-      <label class="checkbox-row"><input type="checkbox" id="f-pw-chk" onchange="document.getElementById('pw-wrap').style.display=this.checked?'block':'none'">인증 비밀번호 설정</label>
-      <div id="pw-wrap" style="display:none;margin-bottom:12px"><input type="text" class="form-input" id="f-pw" placeholder="비밀번호"></div>
-      <button class="btn-register" onclick="createNewEvent()">행사 등록</button>
+    <div class="main-card">
+        <div class="main-title">등록부<span>서명 도우미</span></div>
+        <div class="guide-box">
+            <div class="guide-title">📋 이용 안내</div>
+            <div class="guide-step"><div class="guide-num">1</div><div><b>서명하기</b> 버튼 클릭 후 행사 선택</div></div>
+            <div class="guide-step"><div class="guide-num">2</div><div>본인의 <b>성명/소속</b> 입력</div></div>
+            <div class="guide-step"><div class="guide-num">3</div><div>화면에 <b>직접 서명</b>하면 완료!</div></div>
+        </div>
+        <div class="main-buttons">
+            <button class="btn-primary" onclick="showUserFlow()">✍️ 서명하기</button>
+            <button class="btn-secondary" onclick="openModal('modal-login')">관리자 모드</button>
+        </div>
     </div>
-    <div><div class="list-header"><div class="list-title">등록된 행사 목록</div><button class="btn-refresh" onclick="renderList()">🔄 새로고침</button></div><div id="ev-list"><div class="empty-list">등록된 행사가 없습니다.</div></div></div>
-  </div>
-
-  <div id="tab-sheets" class="admin-tab-panel">
-    <div class="card" style="margin-bottom:20px"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div style="display:flex;align-items:center;gap:12px"><div id="gs-dot" class="gas-dot"></div><div><div style="font-size:15px;font-weight:800" id="gs-text">연동 안 됨</div><div style="font-size:12px;color:var(--g400);margin-top:2px" id="gs-url">웹앱 URL을 설정해주세요.</div></div></div><button class="btn-sync" id="btn-sync-all" onclick="pushAllToSheets()" style="display:none">☁️ 로컬→시트 전체 업로드</button></div><div id="sync-res" class="sync-box"></div></div>
-    <div class="gas-card"><div class="gas-hdr" onclick="toggleGas(this)"><div class="gas-hdr-left"><span style="font-size:22px">📖</span><div><div class="gas-title">구글 앱스 스크립트 연동 설명서</div><div class="gas-sub">클릭해서 펼쳐보세요</div></div></div><div class="gas-arrow">▼</div></div>
-    <div class="gas-body"><div class="s-steps">
-      <div class="s-step"><div class="s-left"><div class="s-num">1</div><div class="s-line"></div></div><div class="s-content"><div class="s-stitle">스프레드시트 만들기</div><div class="s-desc"><a href="https://sheets.google.com" target="_blank" style="color:var(--blue);font-weight:700">sheets.google.com</a> → 새 스프레드시트</div></div></div>
-      <div class="s-step"><div class="s-left"><div class="s-num">2</div><div class="s-line"></div></div><div class="s-content"><div class="s-stitle">Apps Script 열기</div><div class="s-desc"><strong>확장 프로그램 → Apps Script</strong></div></div></div>
-      <div class="s-step"><div class="s-left"><div class="s-num">3</div><div class="s-line"></div></div><div class="s-content"><div class="s-stitle">코드 붙여넣기</div><div class="s-desc">기존 코드 <strong>전부 지우고</strong> 아래 코드 복사/붙여넣기</div><div class="code-blk" id="gas-code"><button class="btn-copy" onclick="copyGAS()">📋 복사</button><span id="gas-disp"></span></div></div></div>
-      <div class="s-step"><div class="s-left"><div class="s-num">4</div><div class="s-line"></div></div><div class="s-content"><div class="s-stitle">저장 → 배포</div><div class="s-desc">💾 저장 → <strong>배포 → 새 배포</strong> → 웹앱 선택<br>실행: <strong>나</strong> / 액세스: <span style="color:var(--red);font-weight:700">모든 사용자</span> → 배포</div><div style="background:#FFF3E0;border:1.5px solid #FFB74D;border-radius:12px;padding:14px 16px;margin-top:4px;font-size:12.5px;color:#4E342E;line-height:1.8"><strong style="color:#E65100">⚠️ 권한 승인:</strong> 액세스 승인 → 계정 선택 → "고급" → "(앱)으로 이동" → "허용" → <strong>URL 복사!</strong></div></div></div>
-      <div class="s-step"><div class="s-left"><div class="s-num">5</div></div><div class="s-content"><div class="s-stitle">URL 입력 & 연결</div><div class="url-wrap"><input type="text" class="url-input" id="gas-input" placeholder="https://script.google.com/macros/s/.../exec"><button class="btn-conn" onclick="testConn()">연결 확인</button></div><div id="conn-status" class="conn-box"></div></div></div>
-    </div></div></div>
-    <div style="background:#FFF8E1;border:1.5px solid #FFE082;border-radius:12px;padding:14px 18px;font-size:13px;color:#5D4037;line-height:1.7">⚠️ <strong>코드 수정 시 재배포:</strong> 배포 → 배포 관리 → ✏️ 수정 → 새 버전 → 배포</div>
-  </div>
-
-  <div id="tab-roster" class="admin-tab-panel"><div class="card"><div class="card-title">명단 관리</div><div class="roster-info"><div><div style="font-size:14px">등록 인원: <strong style="color:var(--blue)" id="roster-cnt">0명</strong></div><div style="font-size:11px;color:var(--g400);margin-top:4px">※ 내부 행사 시 명단 검증 활용. 외부 행사에는 미적용.</div></div><div class="roster-btns"><button class="btn-d-o" onclick="if(confirm('초기화?')){S.roster=[];save();updRoster();toast('완료')}">초기화</button><button class="btn-g-o" onclick="dlTemplate()">⬇ 양식</button><button class="btn-b-o" onclick="$('roster-file').click()">⬆ 업로드</button><input type="file" id="roster-file" accept=".csv" style="display:none" onchange="uploadRoster(this)"></div></div></div></div>
-</div>
 </div>
 
-<div id="screen-user" class="screen"><div class="user-header"><button class="btn-back" onclick="goMain()">← 처음으로</button><div class="user-title">서명할 행사 선택</div></div><div id="user-list" style="width:100%;max-width:480px"></div></div>
+<!-- 로그인 모달 -->
+<div id="modal-login" class="modal-overlay">
+    <div class="modal">
+        <div class="card-title" style="border:none; padding:0; margin-bottom:15px">관리자 인증</div>
+        <input type="password" id="admin-pw" class="form-input" placeholder="비밀번호 입력" style="margin-bottom:15px">
+        <div style="display:flex; gap:10px">
+            <button class="btn-secondary" style="flex:1; padding:12px" onclick="closeModal('modal-login')">취소</button>
+            <button class="btn-primary" style="flex:1; padding:12px; font-size:15px" onclick="checkLogin()">확인</button>
+        </div>
+    </div>
+</div>
 
-<div id="screen-sign-form" class="screen"><div class="sf-card"><div class="sf-name" id="sf-name"></div><div class="sf-detail" id="sf-detail"></div><input type="text" class="sf-input" id="si-dept" placeholder="소속 입력"><input type="text" class="sf-input" id="si-pos" placeholder="직위 입력"><input type="text" class="sf-input" id="si-name" placeholder="성명 입력"><button class="btn-confirm" onclick="goSign()">확인 및 서명</button></div></div>
+<!-- 사용자: 행사 선택 화면 -->
+<div id="screen-user-list" class="screen">
+    <div class="admin-header">
+        <button class="btn-a" onclick="goHome()">← 돌아가기</button>
+        <h2 style="font-size:18px">행사를 선택하세요</h2>
+        <div></div>
+    </div>
+    <div class="admin-content" id="user-event-list">
+        <!-- 행사 카드들이 여기에 동적으로 생성됨 -->
+    </div>
+</div>
 
-<div id="screen-signature" class="screen"><div class="sig-card">
-  <div class="sig-label" id="sig-lbl">서명 대상</div><div class="sig-ev-name" id="sig-ev"></div><div class="sig-person" id="sig-who"></div>
-  <div class="sig-tabs"><button class="sig-tab active" id="m-draw" onclick="setMode('draw')">✏️ 직접 서명</button><button class="sig-tab" id="m-upload" onclick="setMode('upload')">🖼️ 이미지 업로드</button></div>
-  <div id="draw-area"><div class="sig-instr">칸에 맞추어 서명을 크게, 정자로 써주세요.</div><div class="canvas-wrap"><canvas id="sig-canvas"></canvas></div><div class="sig-acts"><button class="btn-clr" onclick="clearCvs()">다시 쓰기</button><button class="btn-cancel" onclick="show('screen-sign-form')">취소</button><button class="btn-done" onclick="submitSig()">서명 완료</button></div></div>
-  <div id="upload-area" style="display:none"><div class="sig-instr">서명 이미지를 업로드하세요.</div><div class="upload-wrap" id="upload-wrap" onclick="$('upload-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault();this.classList.remove('dragover');handleFile(event.dataTransfer.files[0])"><img id="upload-preview" src=""><div id="upload-ph"><div style="font-size:32px">📁</div><div style="font-size:14px;color:var(--g500)">클릭하거나 드래그</div></div><button class="upload-change" id="upload-chg" onclick="event.stopPropagation();$('upload-input').click()">변경</button></div><input type="file" id="upload-input" accept="image/*" onchange="handleFile(this.files[0])"><div class="sig-acts"><button class="btn-cancel" onclick="show('screen-sign-form')">취소</button><button class="btn-done" onclick="submitSig()">서명 완료</button></div></div>
-</div></div>
+<!-- 사용자: 정보 입력 및 서명 화면 -->
+<div id="screen-sign" class="screen">
+    <div class="admin-header">
+        <button class="btn-a" onclick="showUserFlow()">← 이전</button>
+        <h2 style="font-size:16px" id="sign-event-title">행사명</h2>
+        <div></div>
+    </div>
+    <div class="admin-content">
+        <div class="card">
+            <div class="card-title">정보 입력</div>
+            <div class="form-row">
+                <input type="text" id="u-dept" class="form-input" placeholder="소속 (예: OO초등학교)">
+                <input type="text" id="u-pos" class="form-input" placeholder="직위 (예: 교사, 주무관)">
+            </div>
+            <input type="text" id="u-name" class="form-input" placeholder="성명">
+        </div>
 
-<div id="screen-success" class="screen"><div class="suc-icon">✅</div><div class="suc-title">서명이 완료되었습니다!</div><div class="suc-sub" id="suc-msg"></div><button class="btn-home" onclick="goMain()">처음으로 돌아가기</button></div>
+        <div class="card">
+            <div class="card-title">서명란</div>
+            <div class="canvas-wrap">
+                <canvas id="sig-canvas"></canvas>
+            </div>
+            <div style="display:flex; gap:10px">
+                <button class="btn-secondary" style="flex:1" onclick="clearCanvas()">다시 쓰기</button>
+                <button class="btn-primary" style="flex:2" onclick="submitSignature()">서명 완료</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div id="modal-result" class="modal-overlay"><div class="modal" style="max-width:760px;max-height:90vh;overflow-y:auto"><div class="modal-title" id="res-title">결과</div><div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap"><button class="rtype-btn active" id="rt-all" onclick="setRT('all')">📋 전체</button><button class="rtype-btn" id="rt-tc" onclick="setRT('teacher')">🎓 교원</button></div><div id="res-content"></div><div class="modal-btns" style="margin-top:16px;gap:8px"><button class="btn-sm-s" onclick="closeM('modal-result')">닫기</button><button class="btn-sm-p" style="background:var(--green)" onclick="printPDF()">⬇ PDF 다운로드</button></div></div></div>
+<!-- 관리자 메인 화면 -->
+<div id="screen-admin" class="screen">
+    <div class="admin-header">
+        <h2 style="font-size:18px">관리자 패널</h2>
+        <button class="btn-a btn-a-red" onclick="goHome()">로그아웃</button>
+    </div>
+    <div class="admin-content">
+        <div class="admin-tabs">
+            <button id="tab-btn-1" class="admin-tab-btn active" onclick="switchTab(1)">행사 관리</button>
+            <button id="tab-btn-2" class="admin-tab-btn" onclick="switchTab(2)">동기화 설정</button>
+        </div>
 
-<div id="pdf-area"></div><div id="qr-area"></div>
+        <!-- 탭 1: 행사 관리 -->
+        <div id="tab-1" class="tab-panel active">
+            <div class="card">
+                <div class="card-title">새 행사 등록</div>
+                <div class="category-tabs" id="cat-tabs">
+                    <button class="category-btn active" onclick="setCat(this, '연수')">연수</button>
+                    <button class="category-btn" onclick="setCat(this, '회의')">회의</button>
+                    <button class="category-btn" onclick="setCat(this, '위원회')">위원회</button>
+                    <button class="category-btn" onclick="setCat(this, '기타')">기타</button>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="f-title" class="form-input" placeholder="행사 제목">
+                    <input type="text" id="f-loc" class="form-input" placeholder="장소">
+                </div>
+                <div class="form-row">
+                    <input type="date" id="f-date" class="form-input">
+                    <input type="text" id="f-time" class="form-input" placeholder="시간 (예: 14:00~)">
+                </div>
+                <button class="btn-primary" style="width:100%" onclick="addEvent()">등록하기</button>
+            </div>
 
-<div id="modal-qr" class="modal-overlay"><div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto"><div class="modal-title" id="qr-title">🔗 링크 & QR</div><div class="qr-body"><div class="qr-sec"><div class="qr-sec-title">📤 배포용</div><div class="qr-url" id="qr-url">—</div><div class="qr-wrap"><div id="qr-sm"></div></div><div class="qr-acts"><button class="btn-sm-s" onclick="copyURL()">🔗 복사</button><button class="btn-sm-p" onclick="dlQR()">⬇ QR 저장</button></div></div><div class="qr-sec"><div class="qr-sec-title">🖨️ 포스터</div><div class="qr-wrap"><div id="qr-lg"></div></div><button class="btn-sm-p" style="width:100%;margin-top:4px" onclick="printPoster()">🖨️ 포스터 인쇄</button></div></div><div class="modal-btns" style="margin-top:16px"><button class="btn-sm-s" onclick="closeM('modal-qr')">닫기</button></div></div></div>
+            <div id="admin-event-list">
+                <!-- 등록된 행사 목록 -->
+            </div>
+        </div>
 
-<div id="toast-el" class="toast"></div>
+        <!-- 탭 2: 동기화 설정 -->
+        <div id="tab-2" class="tab-panel">
+            <div class="card">
+                <div class="card-title">구글 스프레드시트 연동</div>
+                <p style="font-size:13px; color:var(--g500); margin-bottom:15px">
+                    구글 앱스 스크립트(GAS)를 통해 데이터를 안전하게 클라우드에 보관할 수 있습니다.
+                </p>
+                <input type="text" id="gas-url" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" style="margin-bottom:10px">
+                <button class="btn-primary" style="width:100%" onclick="saveGasUrl()">설정 저장 및 연결 테스트</button>
+                
+                <div class="code-blk" id="gas-code-area">
+                    <button class="btn-copy" onclick="copyGasCode()">코드 복사</button>
+                    <span id="gas-code-text"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 인쇄용 영역 (PDF) -->
+<div id="pdf-area">
+    <div style="padding:40px; background:white;">
+        <h1 id="print-title" style="text-align:center; font-size:24px; margin-bottom:10px;">참석자 등록부</h1>
+        <div id="print-meta" style="text-align:center; margin-bottom:30px; font-size:14px;"></div>
+        <table style="width:100%; border-collapse:collapse; border:2px solid black;">
+            <thead>
+                <tr>
+                    <th style="border:1px solid black; padding:10px; width:50px;">연번</th>
+                    <th style="border:1px solid black; padding:10px; width:120px;">소속</th>
+                    <th style="border:1px solid black; padding:10px; width:100px;">직위</th>
+                    <th style="border:1px solid black; padding:10px; width:100px;">성명</th>
+                    <th style="border:1px solid black; padding:10px;">서명</th>
+                </tr>
+            </thead>
+            <tbody id="print-tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- QR 코드 출력용 -->
+<div id="qr-area">
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:white; text-align:center; padding:50px;">
+        <h1 id="qr-title" style="font-size:32px; margin-bottom:20px;">행사 제목</h1>
+        <div id="qr-gen" style="margin:30px 0;"></div>
+        <p style="font-size:24px; font-weight:800; color:var(--blue)">스마트폰 카메라로 스캔하여 서명하세요</p>
+        <p style="margin-top:20px; font-size:16px; color:#666">전라남도교육청 등록부 지원 서비스</p>
+    </div>
+</div>
 
 <script>
-const $=id=>document.getElementById(id);
-const CI={'연수':'📖','회의':'🗣️','위원회':'🏛️','협의회':'🤝','기타':'📝'};
-const cIcon=c=>CI[c]||'📋';
-const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    // --- 초기 설정 및 데이터 상태 ---
+    let state = {
+        events: JSON.parse(localStorage.getItem('ev_data') || '[]'),
+        signatures: JSON.parse(localStorage.getItem('sig_data') || '[]'),
+        gasUrl: localStorage.getItem('gas_url') || '',
+        currentCat: '연수',
+        selectedEventId: null
+    };
 
-// ===== STATE =====
-let S={events:[],roster:[],gasUrl:'',adminPw:'1234'};
-let curEv=null,curPerson=null,curCat='연수',curScope='internal';
+    const $ = id => document.getElementById(id);
 
-function load(){try{const d=JSON.parse(localStorage.getItem('signApp2')||'{}');S.events=d.events||[];S.roster=d.roster||[];S.gasUrl=d.gasUrl||'';S.adminPw=d.adminPw||'1234'}catch(e){}}
-function save(){try{localStorage.setItem('signApp2',JSON.stringify(S))}catch(e){}}
-load();
-
-// ===== HELPERS =====
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')}
-function goMain(){if(location.search)history.replaceState({},'',location.pathname);show('screen-main');closeM('modal-login')}
-function openM(id){$(id).classList.add('active')}
-function closeM(id){$(id).classList.remove('active')}
-function toast(m){const t=$('toast-el');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
-function showLoad(m){const d=document.createElement('div');d.id='ld';d.className='loading';d.innerHTML=`<div class="spinner"></div><div class="loading-text">${m||'로딩 중...'}</div>`;document.body.appendChild(d)}
-function hideLoad(){const d=$('ld');if(d)d.remove()}
-
-// ===== GAS API LAYER =====
-// GET: can read response (GAS redirects with CORS)
-// POST: fire-and-forget (no-cors)
-async function gasGet(params){
-  if(!S.gasUrl)return null;
-  try{
-    const url=S.gasUrl+'?'+new URLSearchParams(params).toString();
-    const r=await fetch(url);
-    return await r.json();
-  }catch(e){console.warn('GAS GET fail:',e);return null}
-}
-async function gasPost(data){
-  if(!S.gasUrl)return;
-  try{
-    await fetch(S.gasUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)});
-  }catch(e){console.warn('GAS POST fail:',e)}
-}
-// 모바일용 (QR에서 gasUrl 받은 경우)
-async function gasPostTo(url,data){
-  if(!url)return;
-  try{await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)})}catch(e){console.warn('POST fail:',e)}
-}
-
-// ===== EVENT CRUD =====
-function evSheetName(ev){return('s_'+ev.id).substring(0,30)}
-
-async function createNewEvent(){
-  const name=$('f-name').value.trim(),loc=$('f-loc').value.trim(),date=$('f-date').value,time=$('f-time').value.trim();
-  const cat=curCat==='기타'?($('custom-cat').value.trim()||'기타'):curCat;
-  const pw=$('f-pw-chk').checked?$('f-pw').value.trim():null;
-  if(!name){toast('행사명을 입력해주세요.');return}
-  if(!date){toast('날짜를 입력해주세요.');return}
-  const ev={id:Date.now().toString(36)+'_'+Math.random().toString(36).substr(2,4),name,location:loc,date,time,type:curScope,category:cat,password:pw,signatures:[]};
-  S.events.unshift(ev);save();renderList();
-  // GAS에도 등록
-  gasPost({action:'addEvent',event:{id:ev.id,name:ev.name,location:ev.location,date:ev.date,time:ev.time,type:ev.type,category:ev.category}});
-  $('f-name').value='';$('f-loc').value='';$('f-date').value='';$('f-time').value='';$('f-pw-chk').checked=false;$('pw-wrap').style.display='none';$('f-pw').value='';
-  toast(cat+' 등록 완료!');
-}
-
-function deleteEvent(id){
-  if(!confirm('이 행사만 삭제합니다. 삭제하시겠습니까?'))return;
-  S.events=S.events.filter(e=>e.id!==id);
-  save();renderList();
-  gasPost({action:'deleteEvent',eventId:id});
-  toast('삭제 완료');
-}
-
-// ★★★ 시트에서 서명 불러오기 ★★★
-async function fetchSigs(id){
-  const ev=S.events.find(e=>e.id===id);if(!ev)return;
-  if(!S.gasUrl){toast('구글 시트를 먼저 연동해주세요.');return}
-  showLoad('서명 불러오는 중...');
-  const data=await gasGet({action:'getSignatures',sheet:evSheetName(ev)});
-  hideLoad();
-  if(data&&data.success&&data.signatures&&data.signatures.length>0){
-    const merged=new Map();
-    ev.signatures.forEach(s=>merged.set(s.name+'||'+s.dept,s));
-    data.signatures.forEach(s=>{
-      merged.set((s.name||'')+'||'+(s.dept||''),{
-        dept:s.dept||'',position:s.position||'',name:s.name||'',
-        signatureImg:s.imageUrl||'',time:s.time||'',fromSheet:true
-      });
-    });
-    ev.signatures=Array.from(merged.values());
-    save();renderList();
-    toast('✅ '+data.signatures.length+'명 서명 불러옴!');
-  }else{
-    toast(data?'시트에 아직 서명이 없습니다.':'불러오기 실패. 시트 연동을 확인해주세요.');
-  }
-}
-
-// 전체 동기화 (시트→로컬)
-async function refreshFromSheets(){
-  if(!S.gasUrl){toast('시트 연동 필요');return}
-  showLoad('전체 동기화 중...');
-  const data=await gasGet({action:'getEvents'});
-  hideLoad();
-  if(data&&data.success&&data.events){
-    const remote=data.events;
-    // 리모트에만 있는 이벤트 추가
-    remote.forEach(re=>{
-      if(!S.events.find(e=>e.id===re.id)){
-        S.events.push({...re,signatures:[]});
-      }
-    });
-    save();renderList();
-    toast('✅ 동기화 완료! ('+remote.length+'개 행사)');
-  }else{toast('동기화 실패')}
-}
-
-// 로컬→시트 전체 업로드
-async function pushAllToSheets(){
-  if(!S.gasUrl||!S.events.length){toast('데이터 없음');return}
-  const el=$('sync-res');el.className='sync-box show fail';el.textContent='🔄 업로드 중...';
-  // 이벤트 목록 먼저
-  for(const ev of S.events){
-    await gasPost({action:'addEvent',event:{id:ev.id,name:ev.name,location:ev.location,date:ev.date,time:ev.time,type:ev.type,category:ev.category}});
-    if(ev.signatures.length){
-      await gasPost({action:'saveSignatures',sheet:evSheetName(ev),trainingName:ev.name,category:ev.category||'연수',date:ev.date,location:ev.location||'',signatures:ev.signatures.map(s=>({...s,signMode:s.signMode||'직접서명'}))});
+    // --- 화면 전환 로직 ---
+    function show(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        $(screenId).classList.add('active');
+        window.scrollTo(0, 0);
     }
-  }
-  el.className='sync-box show ok';el.textContent='🎉 전체 업로드 완료!';
-  toast('시트 업로드 완료!');
-}
 
-function renderList(){
-  const c=$('ev-list');
-  if(!S.events.length){c.innerHTML='<div class="empty-list">등록된 행사가 없습니다.</div>';return}
-  c.innerHTML=S.events.map(ev=>{
-    const cat=ev.category||'연수';
-    return `<div class="ev-item">
-      <div class="ev-info">
-        <div class="ev-badges"><span class="badge badge-cat">${cIcon(cat)} ${esc(cat)}</span><span class="badge ${ev.type==='external'?'badge-ext':'badge-int'}">${ev.type==='external'?'외부':'내부'}</span><span class="ev-name">${esc(ev.name)}</span></div>
-        <div class="ev-meta"><span>📅 ${ev.date}</span>${ev.location?`<span>📍 ${esc(ev.location)}</span>`:''}<span class="sig-count">✍️ ${ev.signatures.length}명</span></div>
-      </div>
-      <div class="ev-actions">
-        ${S.gasUrl?`<button class="btn-a btn-a-sync" onclick="fetchSigs('${ev.id}')">🔄 시트→불러오기</button>`:''}
-        <button class="btn-a btn-a-g" onclick="shareQR('${ev.id}')">QR/링크</button>
-        <button class="btn-a btn-a-b" onclick="showRes('${ev.id}')">결과</button>
-        <button class="btn-a btn-a-r" onclick="deleteEvent('${ev.id}')">삭제</button>
-      </div>
-    </div>`}).join('');
-}
+    function goHome() { show('screen-main'); }
 
-// ===== ADMIN =====
-function adminLoginModal(){$('pw-input').value='';openM('modal-login');setTimeout(()=>$('pw-input').focus(),100)}
-function doLogin(){
-  if($('pw-input').value===S.adminPw){closeM('modal-login');show('screen-admin');renderList();updRoster();updGasUI();$('sync-banner').classList.toggle('show',!S.gasUrl);$('btn-refresh-all').style.display=S.gasUrl?'inline-flex':'none'}
-  else{toast('비밀번호 오류');$('pw-input').value='';$('pw-input').focus()}
-}
-function pickCat(btn,c){curCat=c;document.querySelectorAll('#cat-tabs .category-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');$('custom-cat-wrap').style.display=c==='기타'?'block':'none'}
-function pickScope(s){curScope=s;$('tab-int').classList.toggle('active',s==='internal');$('tab-ext').classList.toggle('active',s==='external')}
-function switchTab(id){document.querySelectorAll('.admin-tab-btn').forEach((b,i)=>b.classList.toggle('active',['tab-manage','tab-sheets','tab-roster'][i]===id));document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');if(id==='tab-sheets')updGasUI()}
+    function openModal(id) { $(id).classList.add('active'); }
+    function closeModal(id) { $(id).classList.remove('active'); }
 
-// ROSTER
-function updRoster(){$('roster-cnt').textContent=S.roster.length+'명'}
-function dlTemplate(){const b=new Blob(['\uFEFF소속,직위,성명\n예)교무부,교사,홍길동\n'],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='명단양식.csv';a.click()}
-function uploadRoster(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const lines=e.target.result.split('\n').filter(l=>l.trim());S.roster=[];for(let i=1;i<lines.length;i++){const c=lines[i].split(',');if(c[2]&&c[2].trim())S.roster.push({dept:(c[0]||'').trim(),position:(c[1]||'').trim(),name:c[2].trim()})}save();updRoster();toast(S.roster.length+'명 완료')};r.readAsText(f,'utf-8');inp.value=''}
-
-// ===== QR & SHARE =====
-let _qrId=null;
-function encURL(ev){const d={id:ev.id,n:ev.name,l:ev.location,d:ev.date,tm:ev.time,tp:ev.type,c:ev.category||'연수',g:S.gasUrl||''};const b=btoa(unescape(encodeURIComponent(JSON.stringify(d))));return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
-function decURL(enc){try{let b=enc.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';const d=JSON.parse(decodeURIComponent(escape(atob(b))));return{id:d.id,name:d.n||'',location:d.l||'',date:d.d||'',time:d.tm||'',type:d.tp||'internal',category:d.c||'연수',gasUrl:d.g||'',signatures:[]}}catch(e){return null}}
-function shareUrl(ev){return location.href.split('?')[0].split('#')[0]+'?d='+encURL(ev)}
-
-function shareQR(id){
-  const ev=S.events.find(e=>e.id===id);if(!ev)return;_qrId=id;
-  const url=shareUrl(ev);
-  $('qr-title').textContent='🔗 「'+ev.name+'」';
-  $('qr-url').textContent=url;
-  $('qr-sm').innerHTML='';$('qr-lg').innerHTML='';
-  try{new QRCode($('qr-sm'),{text:url,width:180,height:180,colorDark:'#0F172A',correctLevel:QRCode.CorrectLevel.M});new QRCode($('qr-lg'),{text:url,width:260,height:260,colorDark:'#0F172A',correctLevel:QRCode.CorrectLevel.M})}catch(e){}
-  openM('modal-qr');
-}
-function copyURL(){const u=$('qr-url').textContent;navigator.clipboard.writeText(u).then(()=>toast('복사됨!')).catch(()=>{const t=document.createElement('textarea');t.value=u;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('복사됨!')})}
-function dlQR(){const c=document.querySelector('#qr-sm canvas');if(!c)return;const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='QR.png';a.click()}
-function printPoster(){
-  const ev=S.events.find(e=>e.id===_qrId);if(!ev)return;
-  const c=document.querySelector('#qr-lg canvas'),qi=c?c.toDataURL('image/png'):'',cat=ev.category||'연수';
-  const pa=$('qr-area');
-  pa.innerHTML=`<div class="qr-poster"><div class="qr-p-title">「${esc(ev.name)}」 ${esc(cat)} 등록부</div><div class="qr-p-date">${ev.date}${ev.time?' | '+ev.time:''}${ev.location?' | '+ev.location:''}</div><div class="qr-p-instr">📱 QR코드를 찍어<br>등록부에 서명해주세요.</div><div style="margin-bottom:30px">${qi?`<img src="${qi}" style="width:300px;height:300px">`:''}</div><div style="font-size:15px;color:#94A3B8">서명 후 완료 버튼을 눌러주세요.</div></div>`;
-  pa.classList.add('printing');
-  setTimeout(()=>{window.print();setTimeout(()=>{pa.innerHTML='';pa.classList.remove('printing')},1000)},300);
-}
-
-// ===== RESULT =====
-const PORD=['교장','교감','행정실장','교사','주무관','영양사','조리사','강사'];
-const TP=new Set(['교장','교감','교사']);
-function pIdx(p){const i=PORD.indexOf((p||'').trim());return i>=0?i:999}
-function sortS(s){return[...s].sort((a,b)=>{const d=pIdx(a.position)-pIdx(b.position);return d?d:(a.name||'').localeCompare(b.name||'','ko')})}
-
-let _rId=null,_rType='all';
-function setRT(t){_rType=t;$('rt-all').classList.toggle('active',t==='all');$('rt-tc').classList.toggle('active',t==='teacher');if(_rId)renderRes(_rId,t)}
-function showRes(id){_rId=id;_rType='all';$('rt-all').classList.add('active');$('rt-tc').classList.remove('active');const ev=S.events.find(e=>e.id===id);if(!ev)return;$('res-title').textContent='「'+ev.name+'」 '+(ev.category||'연수')+' 등록부';renderRes(id,'all');openM('modal-result')}
-
-function renderRes(id,type){
-  const ev=S.events.find(e=>e.id===id);if(!ev)return;
-  const c=$('res-content');
-  if(!ev.signatures.length){
-    c.innerHTML='<div style="text-align:center;padding:32px;color:var(--g400)">아직 서명이 없습니다.'+(S.gasUrl?'<br><br><button class="btn-a btn-a-sync" onclick="fetchSigs(\''+id+'\');closeM(\'modal-result\')">🔄 시트에서 불러오기</button>':'<br><br><span style="color:#E65100;font-size:13px">구글 시트를 연동하면 모바일 서명을 불러올 수 있습니다.</span>')+'</div>';
-    return;
-  }
-  const sorted=sortS(ev.signatures);
-  const filtered=type==='teacher'?sorted.filter(s=>TP.has((s.position||'').trim())):sorted;
-  c.innerHTML=buildForm(ev,filtered,false);
-}
-
-function buildForm(ev,sigs,forPrint){
-  const cat=ev.category||'연수';
-  const rows=sigs.map((s,i)=>`<tr><td class="c-num">${i+1}</td><td class="c-dept">${esc(s.dept)}</td><td class="c-pos">${esc(s.position)}</td><td class="c-name">${esc(s.name)}</td><td class="c-sig">${s.signatureImg?`<img class="sig-img" src="${s.signatureImg}">`:(s.fromSheet?'<span style="font-size:11px;color:#94A3B8">시트저장</span>':'')}</td><td class="c-rem"></td></tr>`).join('');
-  return `<div class="rf-wrap" ${forPrint?'style="padding:10mm 14mm"':''}>
-    <div class="rf-title">「${esc(ev.name)}」 ${esc(cat)} 등록부</div>
-    <div class="rf-meta">일시: ${ev.date}${ev.time?' | '+ev.time:''}${ev.location?' | 장소: '+esc(ev.location):''}</div>
-    <table class="rf-table"><thead><tr><th class="c-num">번호</th><th class="c-dept">소속</th><th class="c-pos">직위</th><th class="c-name">이름</th><th class="c-sig">서&nbsp;&nbsp;&nbsp;명</th><th class="c-rem">비고</th></tr></thead><tbody>${rows}</tbody></table>
-    ${forPrint?`<div class="rf-footer">출력일: ${new Date().toLocaleDateString('ko-KR')}</div>`:''}</div>`;
-}
-
-// ★★★ PDF 다운로드 — 이미지 로딩 대기 후 인쇄 ★★★
-function printPDF(){
-  const ev=S.events.find(e=>e.id===_rId);if(!ev||!ev.signatures.length){toast('서명 데이터가 없습니다.');return}
-  const sorted=sortS(ev.signatures);
-  const filtered=_rType==='teacher'?sorted.filter(s=>TP.has((s.position||'').trim())):sorted;
-  const pa=$('pdf-area');
-  pa.innerHTML=buildForm(ev,filtered,true);
-  pa.style.display='block';
-  const imgs=pa.querySelectorAll('img');
-  let loaded=0;const total=imgs.length;
-  function doPrint(){setTimeout(()=>{window.print();setTimeout(()=>{pa.innerHTML='';pa.style.display='none'},1500)},400)}
-  if(!total){doPrint();return}
-  imgs.forEach(img=>{
-    if(img.complete){loaded++;if(loaded>=total)doPrint()}
-    else{img.onload=img.onerror=()=>{loaded++;if(loaded>=total)doPrint()}}
-  });
-  setTimeout(()=>{if(loaded<total)doPrint()},5000);
-}
-
-// ===== USER FLOW =====
-function userFlow(){
-  const c=$('user-list');
-  if(!S.events.length){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--g400)">등록된 행사가 없습니다.<br>관리자에게 문의하세요.</div>'}
-  else{c.innerHTML=S.events.map(ev=>{const cat=ev.category||'연수';return `<div class="ev-sel-card" onclick="pickEv('${ev.id}')"><div><span class="ev-sel-badge">${cIcon(cat)} ${esc(cat)}</span></div><div class="ev-sel-date">${ev.date}${ev.time?' | '+ev.time:''}</div><div class="ev-sel-name">${esc(ev.name)}</div>${ev.location?`<div class="ev-sel-loc">📍 ${esc(ev.location)}</div>`:''}</div>`}).join('')}
-  show('screen-user');
-}
-
-function pickEv(id){
-  const ev=S.events.find(e=>e.id===id);if(!ev)return;
-  curEv=ev;const cat=ev.category||'연수';
-  $('sf-name').textContent=ev.name;
-  let d=`<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:#E3F2FD;color:#1565C0;margin-bottom:4px">${cIcon(cat)} ${esc(cat)}</span><br>`;
-  if(ev.date)d+='📅 '+ev.date;if(ev.time)d+=' | ⏰ '+ev.time;if(ev.location)d+='<br>📍 '+esc(ev.location);
-  $('sf-detail').innerHTML=d;
-  $('si-dept').value='';$('si-pos').value='';$('si-name').value='';
-  $('si-dept').placeholder=ev.type==='internal'&&S.roster.length?'소속 (선택)':'소속 입력';
-  $('si-name').placeholder=ev.type==='internal'&&S.roster.length?'성명 (명단 확인)':'성명 입력';
-  if(ev.type==='internal'&&S.roster.length)setupAC();else rmAC();
-  show('screen-sign-form');
-}
-
-function setupAC(){
-  const ni=$('si-name');let dd=$('ac-dd');
-  if(!dd){dd=document.createElement('div');dd.id='ac-dd';dd.style.cssText='position:absolute;z-index:200;background:white;border:1.5px solid #E2E8F0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;width:100%';ni.parentElement.style.position='relative';ni.parentElement.appendChild(dd)}
-  ni.oninput=function(){const v=this.value.trim();const f=v?S.roster.filter(r=>r.name.includes(v)):[];if(!f.length||!v){dd.style.display='none';return}dd.style.display='block';dd.innerHTML=f.slice(0,8).map(r=>`<div style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #F1F5F9" onmousedown="fillAC('${esc(r.name)}','${esc(r.dept)}','${esc(r.position)}')"><strong>${esc(r.name)}</strong> <span style="color:#94A3B8;font-size:12px">${esc(r.dept)}·${esc(r.position)}</span></div>`).join('')};
-  document.addEventListener('click',e=>{if(!e.target.closest('#ac-dd')&&e.target!==ni)dd.style.display='none'});
-}
-function fillAC(n,d,p){$('si-name').value=n;$('si-dept').value=d;$('si-pos').value=p;const dd=$('ac-dd');if(dd)dd.style.display='none'}
-function rmAC(){$('si-name').oninput=null;const dd=$('ac-dd');if(dd)dd.remove()}
-
-function goSign(){
-  const dept=$('si-dept').value.trim(),pos=$('si-pos').value.trim(),name=$('si-name').value.trim();
-  if(!name){toast('성명을 입력해주세요.');return}
-  if(curEv&&curEv.type==='internal'&&S.roster.length){
-    const r=S.roster.find(r=>r.name===name);
-    if(!r){toast('❌ "'+name+'"님은 명단에 없습니다.');return}
-  }
-  if(curEv){const dup=curEv.signatures.find(s=>s.name===name&&s.dept===dept);if(dup&&!confirm(name+'님은 이미 서명. 다시?'))return}
-  curPerson={dept,position:pos,name};
-  $('sig-lbl').textContent='서명 대상 '+(curEv?.category||'연수');
-  $('sig-ev').textContent=curEv?.name||'';
-  $('sig-who').textContent=name+'님 서명';
-  show('screen-signature');sigMode='draw';
-  $('m-draw').classList.add('active');$('m-upload').classList.remove('active');
-  $('draw-area').style.display='block';$('upload-area').style.display='none';
-  initCvs();
-}
-
-// ===== SIGNATURE =====
-let sigMode='draw',uploadData=null;
-function setMode(m){sigMode=m;$('m-draw').classList.toggle('active',m==='draw');$('m-upload').classList.toggle('active',m==='upload');$('draw-area').style.display=m==='draw'?'block':'none';$('upload-area').style.display=m==='upload'?'block':'none';if(m==='draw')initCvs();if(m==='upload')setTimeout(()=>$('upload-input')?.click(),100)}
-
-function handleFile(f){if(!f||!f.type.startsWith('image/'))return;const r=new FileReader();r.onload=e=>{uploadData=e.target.result;$('upload-preview').src=uploadData;$('upload-preview').style.display='block';$('upload-ph').style.display='none';$('upload-chg').style.display='block';$('upload-wrap').classList.add('has-img')};r.readAsDataURL(f)}
-
-let drawing=false,lx=0,ly=0,cvs,cx;
-function initCvs(){cvs=$('sig-canvas');cx=cvs.getContext('2d');cvs.width=cvs.parentElement.getBoundingClientRect().width;cvs.height=200;clearCvs();
-  cvs.onmousedown=e=>{drawing=true;[lx,ly]=gp(e)};cvs.onmousemove=e=>{if(drawing)dr(e)};cvs.onmouseup=cvs.onmouseleave=()=>drawing=false;
-  cvs.ontouchstart=e=>{e.preventDefault();drawing=true;[lx,ly]=gp(e.touches[0])};cvs.ontouchmove=e=>{e.preventDefault();if(drawing)dr(e.touches[0])};cvs.ontouchend=()=>drawing=false}
-function gp(e){const r=cvs.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
-function dr(e){const[x,y]=gp(e);cx.beginPath();cx.strokeStyle='#1e1e1e';cx.lineWidth=3;cx.lineCap='round';cx.lineJoin='round';cx.moveTo(lx,ly);cx.lineTo(x,y);cx.stroke();[lx,ly]=[x,y]}
-function clearCvs(){if(!cx)return;cx.fillStyle='#FFF';cx.fillRect(0,0,cvs.width,cvs.height)}
-
-function submitSig(){
-  let img=null;
-  if(sigMode==='draw'){const d=cx.getImageData(0,0,cvs.width,cvs.height);let has=false;for(let i=0;i<d.data.length;i+=4)if(d.data[i]<240){has=true;break}if(!has){toast('서명을 해주세요.');return}img=cvs.toDataURL('image/png')}
-  else{if(!uploadData){toast('이미지를 업로드해주세요.');return}img=uploadData}
-
-  const sig={...curPerson,signatureImg:img,time:new Date().toLocaleString('ko-KR')};
-
-  if(curEv){
-    curEv.signatures=curEv.signatures.filter(s=>!(s.name===sig.name&&s.dept===sig.dept));
-    curEv.signatures.push(sig);save();
-
-    // ★ 구글 시트에 전송 (gasUrl: 로컬 설정 또는 QR에서 받은 것)
-    const gUrl=S.gasUrl||curEv.gasUrl;
-    if(gUrl){
-      gasPostTo(gUrl,{
-        action:'addSignature',
-        sheet:evSheetName(curEv),
-        trainingName:curEv.name,
-        category:curEv.category||'연수',
-        date:curEv.date,location:curEv.location||'',
-        signature:{dept:sig.dept,position:sig.position,name:sig.name,signatureImg:sig.signatureImg,time:sig.time,signMode:sigMode==='draw'?'직접서명':'이미지업로드'}
-      });
+    function toast(msg) {
+        const t = $('toast');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
     }
-  }
-  // 리셋
-  uploadData=null;$('upload-preview').style.display='none';$('upload-preview').src='';$('upload-ph').style.display='';$('upload-chg').style.display='none';$('upload-wrap').classList.remove('has-img');$('upload-input').value='';
-  $('suc-msg').textContent=(curPerson?.name||'')+'님의 서명이 등록되었습니다.';
-  show('screen-success');
-}
 
-// ===== GAS SETUP =====
-function toggleGas(h){h.classList.toggle('open');h.querySelector('.gas-arrow').classList.toggle('open');h.nextElementSibling.classList.toggle('open')}
-function updGasUI(){
-  const u=S.gasUrl;const gi=$('gas-input');if(gi&&u)gi.value=u;
-  if(u){$('gs-dot').className='gas-dot on';$('gs-text').textContent='✅ 연동됨';$('gs-url').textContent=u.length>50?u.substring(0,50)+'...':u;$('btn-sync-all').style.display='flex';$('sync-banner').classList.remove('show');$('btn-refresh-all').style.display='inline-flex'}
-  else{$('gs-dot').className='gas-dot';$('gs-text').textContent='연동 안 됨';$('gs-url').textContent='URL을 설정해주세요.';$('btn-sync-all').style.display='none';$('btn-refresh-all').style.display='none'}
-}
-
-async function testConn(){
-  const u=$('gas-input').value.trim();if(!u){toast('URL 입력');return}
-  const el=$('conn-status');el.className='conn-box';el.textContent='🔄 확인 중...';el.style.display='block';
-  try{const r=await fetch(u+'?action=ping');const d=await r.json();if(d&&d.success){S.gasUrl=u;save();el.className='conn-box ok';el.textContent='✅ 연결 성공!';updGasUI();toast('연동 완료!')}else throw new Error()}
-  catch(e){if(u.includes('script.google.com')){S.gasUrl=u;save();el.className='conn-box ok';el.textContent='✅ URL 저장됨';updGasUI()}else{el.className='conn-box err';el.textContent='❌ 실패'}}
-}
-
-// ===== GAS CODE =====
-const GAS_CODE=`// 등록부 서명 도우미 - Google Apps Script v3
-// ★ 여러 관리자 동시 사용 가능, 이벤트 목록 + 서명 관리
-
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var action = data.action;
-    if (action === 'addEvent') return addEvent(ss, data.event);
-    if (action === 'deleteEvent') return deleteEvent(ss, data.eventId);
-    if (action === 'addSignature') return addSignature(ss, data);
-    if (action === 'saveSignatures') return saveSignatures(ss, data);
-    return ok({message: 'unknown'});
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({success:false, error:err.message}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doGet(e) {
-  var p = e ? e.parameter : {};
-  var action = p.action || 'ping';
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  if (action === 'ping') return ok({message:'OK'});
-
-  if (action === 'getEvents') {
-    var sheet = ss.getSheetByName('_events');
-    if (!sheet) return ok({success:true, events:[]});
-    var last = sheet.getLastRow();
-    if (last <= 1) return ok({success:true, events:[]});
-    var data = sheet.getRange(2, 1, last-1, 7).getValues();
-    var events = data.filter(function(r){return r[0]}).map(function(r){
-      return {id:r[0],name:r[1]||'',date:r[2]||'',time:r[3]||'',location:r[4]||'',category:r[5]||'연수',type:r[6]||'internal'};
-    });
-    return ok({success:true, events:events});
-  }
-
-  if (action === 'getSignatures') {
-    var sn = p.sheet || '';
-    var sheet = ss.getSheetByName(sn);
-    if (!sheet) return ok({success:true, signatures:[], message:'시트 없음: '+sn});
-    var last = sheet.getLastRow();
-    if (last <= 1) return ok({success:true, signatures:[]});
-    var data = sheet.getRange(2, 1, last-1, 7).getValues();
-    var sigs = data.filter(function(r){return r[3]}).map(function(r){
-      return {num:r[0],dept:r[1]||'',position:r[2]||'',name:r[3]||'',imageUrl:r[4]||'',signMode:r[5]||'',time:r[6]||''};
-    });
-    return ok({success:true, signatures:sigs, sheetName:sn});
-  }
-
-  return ok({message:'OK'});
-}
-
-function getEventsSheet(ss) {
-  var sheet = ss.getSheetByName('_events');
-  if (!sheet) {
-    sheet = ss.insertSheet('_events');
-    sheet.getRange(1,1,1,7).setValues([['ID','행사명','날짜','시간','장소','유형','공개범위']]);
-    sheet.getRange(1,1,1,7).setFontWeight('bold');
-    sheet.setFrozenRows(1);
-  }
-  return sheet;
-}
-
-function addEvent(ss, ev) {
-  var sheet = getEventsSheet(ss);
-  // 중복 체크
-  var last = sheet.getLastRow();
-  if (last > 1) {
-    var ids = sheet.getRange(2, 1, last-1, 1).getValues();
-    for (var i = 0; i < ids.length; i++) {
-      if (ids[i][0] === ev.id) return ok({message:'이미 존재'});
+    // --- 관리자 로직 ---
+    function checkLogin() {
+        if ($('admin-pw').value === '1234') { // 기본 비밀번호 1234
+            closeModal('modal-login');
+            show('screen-admin');
+            renderAdminEvents();
+            $('admin-pw').value = '';
+        } else {
+            toast('비밀번호가 틀렸습니다.');
+        }
     }
-  }
-  sheet.appendRow([ev.id, ev.name||'', ev.date||'', ev.time||'', ev.location||'', ev.category||'연수', ev.type||'internal']);
-  return ok({success:true, message:'등록 완료'});
-}
 
-function deleteEvent(ss, eventId) {
-  var sheet = getEventsSheet(ss);
-  var last = sheet.getLastRow();
-  if (last <= 1) return ok({message:'없음'});
-  var ids = sheet.getRange(2, 1, last-1, 1).getValues();
-  for (var i = ids.length - 1; i >= 0; i--) {
-    if (ids[i][0] === eventId) {
-      sheet.deleteRow(i + 2);
+    function switchTab(idx) {
+        document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        $(`tab-btn-${idx}`).classList.add('active');
+        $(`tab-${idx}`).classList.add('active');
+        if(idx === 2) renderGasCode();
     }
-  }
-  // 서명 시트도 삭제
-  var sigSheet = ss.getSheetByName('s_' + eventId.substring(0, 20));
-  if (sigSheet) ss.deleteSheet(sigSheet);
-  return ok({success:true, message:'삭제 완료'});
-}
 
-function getSigSheet(ss, data) {
-  var sn = data.sheet || ('s_' + (data.eventId || '').substring(0, 20));
-  var sheet = ss.getSheetByName(sn);
-  if (!sheet) {
-    sheet = ss.insertSheet(sn);
-    sheet.getRange(1,1,1,7).setValues([['번호','소속','직위','성명','서명이미지URL','서명방식','시각']]);
-    sheet.getRange(1,1,1,7).setFontWeight('bold');
-    sheet.setFrozenRows(1);
-    if (data.trainingName) { sheet.getRange(1,9).setValue('행사명'); sheet.getRange(1,10).setValue(data.trainingName); }
-    if (data.category) { sheet.getRange(2,9).setValue('유형'); sheet.getRange(2,10).setValue(data.category); }
-    if (data.date) { sheet.getRange(3,9).setValue('날짜'); sheet.getRange(3,10).setValue(data.date); }
-    if (data.location) { sheet.getRange(4,9).setValue('장소'); sheet.getRange(4,10).setValue(data.location); }
-  }
-  return sheet;
-}
-
-function addSignature(ss, data) {
-  var sheet = getSigSheet(ss, data);
-  var sig = data.signature;
-  var last = sheet.getLastRow();
-  // 중복이면 덮어쓰기
-  if (last > 1) {
-    var rows = sheet.getRange(2, 1, last-1, 7).getValues();
-    for (var i = 0; i < rows.length; i++) {
-      if (rows[i][3] === sig.name && rows[i][1] === sig.dept) {
-        var imgUrl = saveImgSafe(sig.signatureImg, sheet.getName()+'_'+sig.name);
-        sheet.getRange(i+2,1,1,7).setValues([[i+1, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'', sig.time||'']]);
-        return ok({success:true, message:'덮어쓰기'});
-      }
+    function setCat(btn, cat) {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.currentCat = cat;
     }
-  }
-  var num = last;
-  var imgUrl = saveImgSafe(sig.signatureImg, sheet.getName()+'_'+num+'_'+sig.name);
-  sheet.appendRow([num, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'', sig.time||'']);
-  return ok({success:true, message:'추가 완료'});
-}
 
-function saveSignatures(ss, data) {
-  var sheet = getSigSheet(ss, data);
-  var sigs = data.signatures || [];
-  var last = sheet.getLastRow();
-  if (last > 1) sheet.getRange(2,1,last-1,7).clearContent();
-  if (!sigs.length) return ok({message:'없음'});
-  var rows = sigs.map(function(sig,i){
-    var imgUrl = saveImgSafe(sig.signatureImg, sheet.getName()+'_'+(i+1)+'_'+sig.name);
-    return [i+1, sig.dept||'', sig.position||'', sig.name||'', imgUrl, sig.signMode||'', sig.time||''];
-  });
-  sheet.getRange(2,1,rows.length,7).setValues(rows);
-  return ok({success:true, message:sigs.length+'명 저장'});
-}
+    function addEvent() {
+        const title = $('f-title').value.trim();
+        if (!title) return toast('제목을 입력하세요.');
+        
+        const newEv = {
+            id: 'ev_' + Date.now(),
+            title: title,
+            cat: state.currentCat,
+            loc: $('f-loc').value || '미지정',
+            date: $('f-date').value || new Date().toISOString().split('T')[0],
+            time: $('f-time').value || '',
+            createdAt: new Date().toISOString()
+        };
 
-function saveImgSafe(dataUrl, filename) {
-  if (!dataUrl || dataUrl.indexOf('data:image') !== 0) return dataUrl || '';
-  try {
-    var folders = DriveApp.getFoldersByName('서명이미지');
-    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder('서명이미지');
-    var parts = dataUrl.split(',');
-    var blob = Utilities.newBlob(Utilities.base64Decode(parts[1]), parts[0].match(/:(.*?);/)[1], filename+'.png');
-    var file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return file.getUrl();
-  } catch(e) { return '저장실패'; }
-}
+        state.events.unshift(newEv);
+        saveData();
+        renderAdminEvents();
+        $('f-title').value = '';
+        toast('행사가 등록되었습니다.');
+    }
 
-function ok(obj) {
-  obj.success = obj.success !== false;
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+    function deleteEvent(id) {
+        if (!confirm('해당 행사와 모든 서명 데이터가 삭제됩니다. 계속하시겠습니까?')) return;
+        state.events = state.events.filter(e => e.id !== id);
+        state.signatures = state.signatures.filter(s => s.eventId !== id);
+        saveData();
+        renderAdminEvents();
+    }
+
+    function renderAdminEvents() {
+        const container = $('admin-event-list');
+        if (state.events.length === 0) {
+            container.innerHTML = '<div class="empty-list" style="text-align:center; padding:40px; color:#999">등록된 행사가 없습니다.</div>';
+            return;
+        }
+
+        container.innerHTML = state.events.map(ev => {
+            const sigCount = state.signatures.filter(s => s.eventId === ev.id).length;
+            return `
+                <div class="ev-item">
+                    <div class="ev-info">
+                        <span class="badge badge-blue">${ev.cat}</span>
+                        <h3>${ev.title}</h3>
+                        <div class="ev-meta">📍 ${ev.loc} | 📅 ${ev.date} ${ev.time}</div>
+                        <div style="margin-top:5px; color:var(--blue); font-weight:700">서명 인원: ${sigCount}명</div>
+                    </div>
+                    <div class="ev-actions">
+                        <button class="btn-a btn-a-green" onclick="printEvent('${ev.id}')">🖨️ 인쇄</button>
+                        <button class="btn-a btn-a-blue" onclick="showQR('${ev.id}')">📱 QR</button>
+                        <button class="btn-a btn-a-red" onclick="deleteEvent('${ev.id}')">삭제</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // --- 사용자 로직 ---
+    function showUserFlow() {
+        show('screen-user-list');
+        const container = $('user-event-list');
+        if (state.events.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:50px; color:#999">현재 진행 중인 행사가 없습니다.</div>';
+            return;
+        }
+
+        container.innerHTML = state.events.map(ev => `
+            <div class="card" onclick="selectEvent('${ev.id}')" style="cursor:pointer; border-left:6px solid var(--accent)">
+                <div style="font-size:12px; color:var(--g500)">${ev.date} ${ev.time}</div>
+                <h3 style="margin:5px 0">${ev.title}</h3>
+                <div style="font-size:13px; color:var(--g700)">장소: ${ev.loc}</div>
+            </div>
+        `).join('');
+    }
+
+    function selectEvent(id) {
+        state.selectedEventId = id;
+        const ev = state.events.find(e => e.id === id);
+        $('sign-event-title').innerText = ev.title;
+        show('screen-sign');
+        initCanvas();
+    }
+
+    // --- 서명 캔버스 로직 ---
+    let canvas, ctx, drawing = false;
+
+    function initCanvas() {
+        canvas = $('sig-canvas');
+        ctx = canvas.getContext('2d');
+        
+        // 고해상도 대응
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        ctx.scale(ratio, ratio);
+
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        };
+
+        const start = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+        const move = (e) => { if(!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+        const stop = () => { drawing = false; };
+
+        canvas.onmousedown = start; canvas.onmousemove = move; window.onmouseup = stop;
+        canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = stop;
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    async function submitSignature() {
+        const name = $('u-name').value.trim();
+        const dept = $('u-dept').value.trim();
+        const pos = $('u-pos').value.trim();
+
+        if (!name || !dept) return toast('소속과 성명을 입력하세요.');
+        
+        // 빈 캔버스 체크 (픽셀 데이터 확인)
+        const blank = document.createElement('canvas');
+        blank.width = canvas.width; blank.height = canvas.height;
+        if (canvas.toDataURL() === blank.toDataURL()) return toast('서명을 해주세요.');
+
+        $('loading').style.display = 'flex';
+
+        const sigData = {
+            id: 'sig_' + Date.now(),
+            eventId: state.selectedEventId,
+            name, dept, pos,
+            img: canvas.toDataURL('image/png'),
+            time: new Date().toISOString()
+        };
+
+        state.signatures.push(sigData);
+        saveData();
+
+        // GAS 동기화 시도
+        if (state.gasUrl) {
+            try {
+                await fetch(state.gasUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(sigData)
+                });
+            } catch (e) { console.error('Sync failed', e); }
+        }
+
+        setTimeout(() => {
+            $('loading').style.display = 'none';
+            toast('서명이 완료되었습니다. 감사합니다.');
+            clearInputs();
+            goHome();
+        }, 800);
+    }
+
+    function clearInputs() {
+        $('u-name').value = ''; $('u-dept').value = ''; $('u-pos').value = '';
+    }
+
+    // --- 인쇄 및 QR ---
+    function printEvent(id) {
+        const ev = state.events.find(e => e.id === id);
+        const sigs = state.signatures.filter(s => s.eventId === id);
+        
+        $('print-title').innerText = `${ev.title} 참석자 등록부`;
+        $('print-meta').innerText = `일시: ${ev.date} ${ev.time} | 장소: ${ev.loc}`;
+        
+        let html = '';
+        for (let i = 0; i < Math.max(sigs.length, 15); i++) {
+            const s = sigs[i] || { dept:'', pos:'', name:'', img:'' };
+            html += `
+                <tr>
+                    <td style="border:1px solid black; height:50px; text-align:center">${i+1}</td>
+                    <td style="border:1px solid black; text-align:center">${s.dept}</td>
+                    <td style="border:1px solid black; text-align:center">${s.pos}</td>
+                    <td style="border:1px solid black; text-align:center; font-weight:bold">${s.name}</td>
+                    <td style="border:1px solid black; text-align:center">
+                        ${s.img ? `<img src="${s.img}" style="height:40px">` : ''}
+                    </td>
+                </tr>
+            `;
+        }
+        $('print-tbody').innerHTML = html;
+        window.print();
+    }
+
+    function showQR(id) {
+        const ev = state.events.find(e => e.id === id);
+        const url = window.location.href.split('?')[0] + '?target=' + id;
+        
+        $('qr-title').innerText = ev.title;
+        $('qr-gen').innerHTML = '';
+        new QRCode($('qr-gen'), {
+            text: url,
+            width: 256,
+            height: 256
+        });
+        
+        $('qr-area').style.display = 'block';
+        window.print();
+        setTimeout(() => { $('qr-area').style.display = 'none'; }, 1000);
+    }
+
+    // --- 데이터 저장 및 연동 ---
+    function saveData() {
+        localStorage.setItem('ev_data', JSON.stringify(state.events));
+        localStorage.setItem('sig_data', JSON.stringify(state.signatures));
+    }
+
+    function saveGasUrl() {
+        const url = $('gas-url').value.trim();
+        if (!url.startsWith('https://')) return toast('올바른 URL을 입력하세요.');
+        state.gasUrl = url;
+        localStorage.setItem('gas_url', url);
+        toast('연동 설정이 저장되었습니다.');
+    }
+
+    function renderGasCode() {
+        const code = `function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    new Date(), 
+    data.eventId, 
+    data.dept, 
+    data.pos, 
+    data.name, 
+    data.img
+  ]);
+  return ContentService.createTextOutput("Success");
 }`;
-
-document.addEventListener('DOMContentLoaded',()=>{const el=$('gas-disp');if(el)el.textContent=GAS_CODE});
-function copyGAS(){navigator.clipboard.writeText(GAS_CODE).then(()=>{document.querySelector('#gas-code .btn-copy').textContent='✅ 복사됨!';setTimeout(()=>document.querySelector('#gas-code .btn-copy').textContent='📋 복사',2000)}).catch(()=>{const t=document.createElement('textarea');t.value=GAS_CODE;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('복사됨!')})}
-
-// ===== INIT & URL PARAMS =====
-renderList();
-
-(function(){
-  const p=new URLSearchParams(location.search);
-  const enc=p.get('d');
-  if(enc){
-    const d=decURL(enc);
-    if(d){
-      let ex=S.events.find(e=>e.id===d.id);
-      if(!ex){ex={...d};S.events.push(ex);save()}
-      if(d.gasUrl&&!S.gasUrl){S.gasUrl=d.gasUrl;save()}
-      if(d.gasUrl)ex.gasUrl=d.gasUrl;
-      curEv=ex;
-      const cat=ex.category||'연수';
-      $('sf-name').textContent=ex.name;
-      let dt=`<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:#E3F2FD;color:#1565C0;margin-bottom:4px">${cIcon(cat)} ${esc(cat)}</span><br>`;
-      if(ex.date)dt+='📅 '+ex.date;if(ex.time)dt+=' | ⏰ '+ex.time;if(ex.location)dt+='<br>📍 '+esc(ex.location);
-      $('sf-detail').innerHTML=dt;
-      $('si-dept').value='';$('si-pos').value='';$('si-name').value='';
-      $('si-dept').placeholder='소속 입력';$('si-name').placeholder='성명 입력';rmAC();
-      show('screen-sign-form');return;
+        $('gas-code-text').innerText = code;
     }
-  }
-  const tid=p.get('t');
-  if(tid){const f=S.events.find(e=>e.id===tid);if(f)pickEv(f.id);else{userFlow();$('user-list').innerHTML='<div style="text-align:center;padding:36px;color:var(--red)">⚠️ 행사를 찾을 수 없습니다.</div>'}}
-})();
+
+    function copyGasCode() {
+        const text = $('gas-code-text').innerText;
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        toast('코드가 복사되었습니다.');
+    }
+
+    // --- 초기 실행 ---
+    window.onload = () => {
+        // URL 파라미터 체크 (QR 접속 시 바로 해당 행사로)
+        const params = new URLSearchParams(window.location.search);
+        const target = params.get('target');
+        if (target && state.events.find(e => e.id === target)) {
+            selectEvent(target);
+        }
+        
+        // GAS URL 불러오기
+        if (state.gasUrl) $('gas-url').value = state.gasUrl;
+    };
 </script>
+
 </body>
 </html>
