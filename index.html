@@ -1,483 +1,1717 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>등록부 서명 도우미</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        :root {
-            --blue: #3B6EEA; --blue-dark: #2A55C9; --red: #E84444; --green: #22A06B;
-            --g50: #F8FAFC; --g100: #F1F5F9; --g200: #E2E8F0; --g300: #CBD5E1;
-            --g400: #94A3B8; --g500: #64748B; --g700: #334155; --g900: #0F172A;
-            --white: #FFF; --shadow: 0 4px 24px rgba(59,110,234,.1);
-            --accent: #3A9B5C; --accent-dk: #2E7D48;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Noto Sans KR', sans-serif; background: #E8F5ED; min-height: 100vh; color: var(--g900); overflow-x: hidden; }
-        .screen { display: none; }
-        .screen.active { display: flex; flex-direction: column; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>연수 서명 등록부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ===== CSS 변수 ===== */
+:root {
+  --primary: #1B6B3A;
+  --primary-light: #2E8B57;
+  --primary-ultra: #E8F5EE;
+  --accent: #F0A500;
+  --danger: #D93025;
+  --danger-light: #FFF0EF;
+  --blue: #1A73E8;
+  --blue-light: #E8F0FE;
+  --white: #FFFFFF;
+  --g50: #F8FAFB;
+  --g100: #F1F5F2;
+  --g200: #E2EBE5;
+  --g300: #C5D6CA;
+  --g400: #8FAF97;
+  --g500: #5A7A63;
+  --g700: #2D4A35;
+  --g900: #0F2416;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.06);
+  --shadow: 0 4px 20px rgba(0,0,0,.10);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,.16);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
 
-        /* 메인 카드 디자인 */
-        #screen-main { min-height: 100vh; background: linear-gradient(145deg, #6DBF8A, #4CAF70 50%, #3A9B5C); align-items: center; justify-content: center; padding: 24px; }
-        .main-card { background: var(--white); border-radius: 28px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(30,50,120,.25); text-align: center; }
-        .main-title { font-size: 26px; font-weight: 900; line-height: 1.3; margin-bottom: 30px; }
-        .main-title span { display: block; color: var(--accent); font-size: 30px; }
-        
-        /* 버튼 공통 */
-        .btn-primary { background: var(--accent); color: white; border: none; border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all .2s; width: 100%; margin-bottom: 12px; }
-        .btn-secondary { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g200); border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; }
-        
-        /* 관리자 레이아웃 */
-        .admin-header { background: white; border-bottom: 1px solid var(--g200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-        .admin-content { padding: 24px; max-width: 800px; margin: 0 auto; width: 100%; }
-        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; position: relative; }
-        .card-title { font-size: 17px; font-weight: 800; border-left: 4px solid var(--accent); padding-left: 12px; margin-bottom: 20px; }
+/* ===== 리셋 ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--g50); color: var(--g900); min-height: 100vh; overflow-x: hidden; }
 
-        /* 입력 폼 */
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .form-input { width: 100%; border: 1.5px solid var(--g200); border-radius: 10px; padding: 12px; font-size: 14px; outline: none; }
-        .form-input:focus { border-color: var(--accent); }
+/* ===== 화면 전환 ===== */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
 
-        /* 리스트 스타일 */
-        .ev-item { background: white; border-radius: 12px; padding: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-right: 5px; }
-        .badge-green { background: #E8F5ED; color: #2E7D48; }
-        .badge-blue { background: #E3F2FD; color: #1565C0; }
+/* ==============================
+   메인 화면
+============================== */
+#screen-main {
+  background: linear-gradient(160deg, #1B6B3A 0%, #2E8B57 45%, #3DAA6A 100%);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.main-bg-pattern {
+  position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+}
+.main-bg-pattern::before {
+  content: '';
+  position: absolute; width: 600px; height: 600px;
+  border: 80px solid rgba(255,255,255,.04); border-radius: 50%;
+  top: -200px; right: -200px;
+}
+.main-bg-pattern::after {
+  content: '';
+  position: absolute; width: 400px; height: 400px;
+  border: 60px solid rgba(255,255,255,.04); border-radius: 50%;
+  bottom: -100px; left: -100px;
+}
+.main-card {
+  background: var(--white);
+  border-radius: 28px;
+  padding: 44px 36px 36px;
+  width: 100%; max-width: 400px;
+  box-shadow: var(--shadow-lg);
+  position: relative; z-index: 1;
+  text-align: center;
+}
+.main-icon {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, #1B6B3A, #3DAA6A);
+  border-radius: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 8px 24px rgba(27,107,58,.35);
+  margin-bottom: 20px;
+}
+.main-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 28px; font-weight: 900;
+  color: var(--g900); line-height: 1.25;
+  margin-bottom: 8px;
+}
+.main-title span { color: var(--primary); display: block; }
+.main-sub {
+  font-size: 14px; color: var(--g500);
+  margin-bottom: 36px; line-height: 1.6;
+}
+.btn-main-sign {
+  width: 100%; padding: 18px;
+  background: linear-gradient(135deg, #1B6B3A, #2E8B57);
+  color: white; border: none; border-radius: var(--radius);
+  font-size: 18px; font-weight: 700;
+  cursor: pointer; margin-bottom: 12px;
+  box-shadow: 0 6px 20px rgba(27,107,58,.35);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .2s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.btn-main-sign:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(27,107,58,.4); }
+.btn-main-admin {
+  width: 100%; padding: 15px;
+  background: var(--g100); color: var(--g700);
+  border: 1.5px solid var(--g200);
+  border-radius: var(--radius);
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all .2s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.btn-main-admin:hover { background: var(--g200); }
+.main-footer { margin-top: 24px; font-size: 12px; color: var(--g400); }
 
-        /* 서명 및 자동완성 */
-        .canvas-wrap { background: white; border: 2px dashed var(--g300); border-radius: 12px; overflow: hidden; margin: 15px 0; touch-action: none; }
-        #sig-canvas { width: 100%; height: 250px; cursor: crosshair; }
-        .autocomplete-items { position: absolute; border: 1px solid var(--g200); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: #fff; border-radius: 0 0 10px 10px; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .autocomplete-items div { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--g100); }
-        .autocomplete-items div:hover { background-color: var(--g50); }
+/* ==============================
+   공통 헤더
+============================== */
+.app-header {
+  background: var(--white);
+  border-bottom: 1.5px solid var(--g200);
+  padding: 0 20px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: var(--shadow-sm);
+}
+.header-back {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none;
+  font-size: 15px; font-weight: 600; color: var(--g700);
+  cursor: pointer; padding: 8px 4px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.header-back:hover { color: var(--primary); }
+.header-title {
+  font-size: 16px; font-weight: 700;
+  color: var(--g900); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  max-width: 200px;
+}
+.header-right { min-width: 60px; text-align: right; }
 
-        /* 공통 로딩/모달 */
-        .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { width: 40px; height: 40px; border: 4px solid var(--g200); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 20px; padding: 30px; width: 100%; max-width: 360px; }
+/* ==============================
+   콘텐츠 레이아웃
+============================== */
+.content { padding: 20px; max-width: 640px; margin: 0 auto; width: 100%; flex: 1; }
 
-        /* 인쇄 설정 */
-        @media print {
-            body * { visibility: hidden; }
-            #pdf-area, #pdf-area *, #qr-area-print, #qr-area-print * { visibility: visible !important; }
-            #pdf-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
-            #qr-area-print { display: flex !important; position: absolute; left: 0; top: 0; width: 100%; flex-direction: column; align-items: center; justify-content: center; }
-        }
-        #pdf-area, #qr-area-print { display: none; }
+/* ==============================
+   카드
+============================== */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+  border: 1px solid var(--g200);
+}
+.card-title {
+  font-size: 15px; font-weight: 800;
+  color: var(--g700);
+  padding-left: 12px;
+  border-left: 4px solid var(--primary);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
 
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 4000; pointer-events: none; }
-        .toast.show { opacity: 1; bottom: 50px; }
-        .admin-tab-btn { padding: 12px 20px; border: none; background: none; font-weight: 700; color: var(--g400); cursor: pointer; border-bottom: 2px solid transparent; }
-        .admin-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-    </style>
+/* ==============================
+   폼 요소
+============================== */
+.form-group { margin-bottom: 14px; position: relative; }
+.form-label {
+  display: block;
+  font-size: 12px; font-weight: 700;
+  color: var(--g500);
+  margin-bottom: 5px;
+  letter-spacing: .04em;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  border: 1.5px solid var(--g200);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--g900);
+  background: var(--white);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(27,107,58,.1);
+}
+.form-input::placeholder { color: var(--g300); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+/* 자동완성 */
+.autocomplete-wrap { position: relative; }
+.autocomplete-list {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: white;
+  border: 1.5px solid var(--primary);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  z-index: 100;
+  max-height: 180px; overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+.autocomplete-item {
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--g100);
+  font-size: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover { background: var(--primary-ultra); }
+.autocomplete-item .ac-name { font-weight: 700; color: var(--g900); }
+.autocomplete-item .ac-dept { font-size: 12px; color: var(--g500); }
+
+/* ==============================
+   버튼
+============================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; border: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 3px 12px rgba(27,107,58,.25); }
+.btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+.btn-secondary { background: var(--g100); color: var(--g700); border: 1.5px solid var(--g200); }
+.btn-secondary:hover { background: var(--g200); }
+.btn-danger { background: var(--danger-light); color: var(--danger); border: 1.5px solid #FFCDD2; }
+.btn-danger:hover { background: #FFCDD2; }
+.btn-blue { background: var(--blue-light); color: var(--blue); border: 1.5px solid #BBDEFB; }
+.btn-blue:hover { background: #BBDEFB; }
+.btn-accent { background: var(--accent); color: white; box-shadow: 0 3px 12px rgba(240,165,0,.3); }
+.btn-accent:hover { background: #D4920A; }
+.btn-full { width: 100%; }
+.btn-lg { padding: 16px 24px; font-size: 16px; border-radius: var(--radius); }
+.btn-sm { padding: 7px 13px; font-size: 12px; border-radius: 8px; }
+.btn-icon { padding: 9px; }
+
+/* ==============================
+   서명 캔버스
+============================== */
+.canvas-wrap {
+  background: var(--g50);
+  border: 2px dashed var(--g300);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin: 12px 0;
+  touch-action: none;
+  position: relative;
+}
+.canvas-hint {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  color: var(--g300); font-size: 14px; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.canvas-hint.hidden { display: none; }
+#sig-canvas { display: block; width: 100%; height: 200px; cursor: crosshair; }
+
+/* ==============================
+   행사 목록 (사용자용)
+============================== */
+.event-card-user {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 14px;
+  border: 2px solid var(--g200);
+  cursor: pointer;
+  transition: all .2s;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.event-card-user:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(27,107,58,.15);
+  transform: translateY(-2px);
+}
+.event-card-user:active { transform: scale(.98); }
+.event-card-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--primary-ultra);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.event-card-info { flex: 1; min-width: 0; }
+.event-card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.event-card-meta { font-size: 12px; color: var(--g500); }
+.event-card-arrow { color: var(--g300); font-size: 20px; flex-shrink: 0; }
+
+/* ==============================
+   관리자 탭
+============================== */
+.tab-bar {
+  display: flex;
+  background: var(--g100);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+  gap: 2px;
+}
+.tab-btn {
+  flex: 1; padding: 10px 6px;
+  background: none; border: none;
+  border-radius: 9px;
+  font-size: 13px; font-weight: 600;
+  color: var(--g500); cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tab-btn.active { background: var(--white); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+/* 관리자 행사 아이템 */
+.admin-event-item {
+  background: var(--white);
+  border: 1.5px solid var(--g200);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.admin-event-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.admin-event-title { font-size: 15px; font-weight: 700; flex: 1; margin-right: 10px; }
+.admin-event-meta { font-size: 12px; color: var(--g500); margin-top: 3px; }
+.admin-event-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 9px; border-radius: 100px;
+  font-size: 11px; font-weight: 700;
+}
+.badge-green { background: #E8F5EE; color: #1B6B3A; border: 1px solid #B7DFC7; }
+.badge-blue { background: #E8F0FE; color: #1A73E8; border: 1px solid #BBDEFB; }
+.badge-count {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--g100); color: var(--g700);
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 12px; font-weight: 700;
+}
+.sig-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ==============================
+   서명 목록 미리보기
+============================== */
+.sig-preview-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.sig-chip {
+  background: var(--primary-ultra);
+  border: 1px solid var(--g200);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-size: 12px; font-weight: 600; color: var(--primary);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+
+/* ==============================
+   모달
+============================== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%; max-width: 380px;
+  box-shadow: var(--shadow-lg);
+  animation: modal-in .25s ease;
+}
+@keyframes modal-in {
+  from { transform: scale(.94) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.modal-title {
+  font-size: 17px; font-weight: 800;
+  margin-bottom: 18px; color: var(--g900);
+  display: flex; align-items: center; gap: 8px;
+}
+.modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+.modal-btns .btn { flex: 1; }
+
+/* ==============================
+   토스트
+============================== */
+.toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--g900); color: white;
+  padding: 13px 24px; border-radius: 100px;
+  font-size: 14px; font-weight: 600;
+  opacity: 0; pointer-events: none;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 9999; white-space: nowrap;
+  max-width: calc(100vw - 40px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ==============================
+   로딩
+============================== */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,.9);
+  backdrop-filter: blur(4px);
+  z-index: 3000;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+.loading-overlay.active { display: flex; }
+.spinner {
+  width: 44px; height: 44px;
+  border: 4px solid var(--g200);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; font-weight: 600; color: var(--g700); }
+
+/* ==============================
+   빈 상태
+============================== */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--g400);
+}
+.empty-icon { font-size: 52px; margin-bottom: 14px; opacity: .5; }
+.empty-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.empty-desc { font-size: 13px; line-height: 1.6; }
+
+/* ==============================
+   Firebase 설정 UI
+============================== */
+.code-block {
+  background: #1E2D40;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #A8D8A8;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin: 12px 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.step-box {
+  background: var(--primary-ultra);
+  border: 1.5px solid var(--g200);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--primary); color: white;
+  font-size: 11px; font-weight: 700;
+  margin-right: 8px; flex-shrink: 0;
+}
+.step-row { display: flex; align-items: flex-start; gap: 4px; margin-bottom: 4px; font-size: 13px; }
+.info-box {
+  background: var(--blue-light);
+  border: 1.5px solid #BBDEFB;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 13px; color: #1A56DB;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+.warn-box {
+  background: #FFF8E1;
+  border: 1.5px solid #FFE082;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 13px; color: #7B5E00;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+.connected-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--primary-ultra); color: var(--primary);
+  border: 1.5px solid var(--g200);
+  border-radius: 100px;
+  padding: 5px 14px; font-size: 13px; font-weight: 700;
+}
+.dot-pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.8); }
+}
+.divider { border: none; border-top: 1.5px solid var(--g200); margin: 16px 0; }
+
+/* ==============================
+   서명 완료 화면
+============================== */
+#screen-done {
+  background: linear-gradient(160deg, #1B6B3A 0%, #3DAA6A 100%);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.done-card {
+  background: var(--white);
+  border-radius: 28px; padding: 44px 32px;
+  max-width: 360px; width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+.done-icon {
+  font-size: 56px; margin-bottom: 20px;
+  animation: bounce-in .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes bounce-in {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.done-title { font-family: 'Noto Serif KR', serif; font-size: 24px; font-weight: 900; margin-bottom: 10px; color: var(--primary); }
+.done-sub { font-size: 14px; color: var(--g500); line-height: 1.7; margin-bottom: 28px; }
+.done-name { font-size: 20px; font-weight: 700; color: var(--g900); margin-bottom: 6px; }
+
+/* ==============================
+   인쇄 영역
+============================== */
+@media print {
+  body > *:not(#print-area) { display: none !important; }
+  #print-area {
+    display: block !important;
+    position: absolute; left: 0; top: 0; width: 100%; background: white;
+  }
+}
+#print-area { display: none; }
+.print-header {
+  text-align: center; padding: 24px 32px 16px;
+  border-bottom: 2px solid #000;
+  margin-bottom: 20px;
+}
+.print-event-title { font-size: 22px; font-weight: 900; font-family: 'Noto Serif KR', serif; }
+.print-event-meta { font-size: 13px; color: #555; margin-top: 6px; }
+.print-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.print-table th, .print-table td { border: 1px solid #888; padding: 8px 10px; text-align: center; }
+.print-table th { background: #f0f0f0; font-weight: 700; }
+.print-table td.name { font-weight: 700; }
+.print-table td.sig img { max-height: 44px; max-width: 120px; }
+.print-table tr.empty td { height: 48px; }
+
+/* QR 인쇄 영역 */
+#qr-print-area { display: none; }
+@media print {
+  body > *:not(#print-area):not(#qr-print-area) { display: none !important; }
+  #print-area, #qr-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+}
+.qr-print-inner {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh; padding: 40px;
+  background: white;
+  text-align: center;
+}
+.qr-print-title { font-size: 32px; font-weight: 900; font-family: 'Noto Serif KR', serif; margin-bottom: 8px; }
+.qr-print-sub { font-size: 18px; color: #555; margin-bottom: 32px; }
+.qr-print-box { padding: 24px; border: 2px solid #ddd; border-radius: 16px; background: white; margin-bottom: 24px; }
+.qr-print-hint { font-size: 20px; font-weight: 700; color: #1B6B3A; }
+.qr-print-url { font-size: 13px; color: #888; margin-top: 8px; word-break: break-all; }
+
+/* ==============================
+   반응형
+============================== */
+@media (max-width: 480px) {
+  .form-row { grid-template-columns: 1fr; }
+  .admin-event-actions { justify-content: flex-start; }
+  .tab-btn { font-size: 11px; padding: 9px 4px; }
+}
+
+/* 서명 성공 펄스 */
+.sign-submit-btn.submitting { animation: submitting 1s infinite; pointer-events: none; }
+@keyframes submitting {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+
+/* 진행 바 */
+.progress-bar {
+  width: 100%; height: 4px; background: var(--g200);
+  border-radius: 2px; overflow: hidden; margin: 12px 0;
+}
+.progress-fill {
+  height: 100%; background: var(--primary);
+  transition: width .3s; border-radius: 2px;
+}
+
+/* 체크박스 스타일 */
+.checkbox-wrap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; cursor: pointer;
+}
+.checkbox-custom {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 2px solid var(--g300);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .15s;
+}
+.checkbox-wrap input { display: none; }
+.checkbox-wrap input:checked + .checkbox-custom {
+  background: var(--primary); border-color: var(--primary);
+}
+.checkbox-label { font-size: 14px; color: var(--g700); }
+
+/* 서명자 표 */
+.sig-table-wrap { overflow-x: auto; }
+.sig-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+.sig-table th {
+  background: var(--primary-ultra);
+  padding: 10px 12px; font-weight: 700;
+  border-bottom: 2px solid var(--g200);
+  text-align: left; white-space: nowrap;
+}
+.sig-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--g100);
+  vertical-align: middle;
+}
+.sig-table tr:hover td { background: var(--g50); }
+.sig-table td img { height: 36px; max-width: 100px; }
+
+/* 직위 정렬 배지 */
+.pos-order-badge {
+  display: inline-block;
+  width: 20px; height: 20px;
+  background: var(--g100); border-radius: 50%;
+  text-align: center; line-height: 20px;
+  font-size: 11px; font-weight: 700; color: var(--g500);
+  margin-right: 6px; flex-shrink: 0;
+}
+
+/* Firebase 연결 상태 */
+.fb-status {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--g500);
+  padding: 8px 0;
+}
+.fb-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--g300); flex-shrink: 0;
+}
+.fb-dot.connected { background: #22A06B; animation: pulse 1.5s infinite; }
+.fb-dot.error { background: var(--danger); }
+</style>
 </head>
 <body>
 
+<!-- ========== 로딩 ========== -->
 <div id="loading" class="loading-overlay">
-    <div class="spinner"></div>
-    <div id="loading-text" style="margin-top:15px; font-weight:700; color:var(--g700)">처리 중...</div>
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">잠시만 기다려 주세요…</div>
 </div>
 
-<div id="toast" class="toast">메시지</div>
+<!-- ========== 토스트 ========== -->
+<div id="toast" class="toast"></div>
 
-<!-- [화면] 메인 -->
+<!-- ========== 인쇄 영역 ========== -->
+<div id="print-area">
+  <div class="print-header">
+    <div class="print-event-title" id="print-event-title"></div>
+    <div class="print-event-meta" id="print-event-meta"></div>
+  </div>
+  <div style="padding: 0 32px 32px">
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width:44px">번호</th>
+          <th style="width:100px">직위</th>
+          <th style="width:160px">소속</th>
+          <th style="width:90px">성명</th>
+          <th>서명</th>
+        </tr>
+      </thead>
+      <tbody id="print-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== QR 인쇄 영역 ========== -->
+<div id="qr-print-area">
+  <div class="qr-print-inner">
+    <div class="qr-print-title" id="qr-print-title"></div>
+    <div class="qr-print-sub" id="qr-print-sub"></div>
+    <div class="qr-print-box">
+      <div id="qr-gen-print"></div>
+    </div>
+    <div class="qr-print-hint">📱 QR코드를 스캔하여 서명하세요</div>
+    <div class="qr-print-url" id="qr-print-url"></div>
+  </div>
+</div>
+
+<!-- ==============================
+     [화면] 메인
+============================== -->
 <div id="screen-main" class="screen active">
-    <div class="main-card">
-        <div class="main-title">등록부<span>서명 도우미</span></div>
-        <button class="btn-primary" onclick="showUserFlow()">✍️ 서명하기</button>
-        <button class="btn-secondary" onclick="openModal('modal-login')">관리자 모드</button>
-    </div>
+  <div class="main-bg-pattern"></div>
+  <div class="main-card">
+    <div class="main-icon">📋</div>
+    <div class="main-title">연수 서명 등록부<span>서명 도우미</span></div>
+    <div class="main-sub">QR코드를 스캔하여 연수 참석 서명을 간편하게 등록하세요</div>
+    <button class="btn-main-sign" onclick="goUserList()">
+      ✍️ 서명하기
+    </button>
+    <button class="btn-main-admin" onclick="openModal('modal-login')">
+      🔐 관리자 모드
+    </button>
+    <div class="main-footer">Firebase 실시간 연동 · 다기기 동시 서명 지원</div>
+  </div>
 </div>
 
-<!-- [모달] 관리자 로그인 -->
-<div id="modal-login" class="modal-overlay">
-    <div class="modal">
-        <div class="card-title" style="border:none; padding:0; margin-bottom:15px">관리자 인증</div>
-        <input type="password" id="admin-pw" class="form-input" placeholder="비밀번호 입력 (기본: 1234)" style="margin-bottom:15px">
-        <div style="display:flex; gap:10px">
-            <button class="btn-secondary" style="flex:1" onclick="closeModal('modal-login')">취소</button>
-            <button class="btn-primary" style="flex:1; margin-bottom:0" onclick="checkLogin()">확인</button>
-        </div>
-    </div>
-</div>
-
-<!-- [화면] 행사 선택 (사용자용) -->
+<!-- ==============================
+     [화면] 행사 선택 (사용자)
+============================== -->
 <div id="screen-user-list" class="screen">
-    <div class="admin-header">
-        <button onclick="goHome()" style="background:none; border:none; font-weight:bold; cursor:pointer">← 돌아가기</button>
-        <h2 style="font-size:18px">행사를 선택하세요</h2>
-        <div></div>
+  <div class="app-header">
+    <button class="header-back" onclick="goHome()">← 홈으로</button>
+    <div class="header-title">행사 선택</div>
+    <div class="header-right"></div>
+  </div>
+  <div class="content">
+    <div style="margin-bottom:16px; padding:14px 16px; background:var(--primary-ultra); border-radius:var(--radius-sm); border:1.5px solid var(--g200); font-size:13px; color:var(--g700); line-height:1.6">
+      📌 참석하실 행사를 선택하고 서명해 주세요
     </div>
-    <div class="admin-content" id="user-event-list"></div>
+    <div id="user-event-list"></div>
+  </div>
 </div>
 
-<!-- [화면] 서명 입력 -->
+<!-- ==============================
+     [화면] 서명 입력
+============================== -->
 <div id="screen-sign" class="screen">
-    <div class="admin-header">
-        <button onclick="showUserFlow()" style="background:none; border:none; font-weight:bold; cursor:pointer">← 이전</button>
-        <h2 style="font-size:16px" id="sign-event-title">행사명</h2>
-        <div></div>
+  <div class="app-header">
+    <button class="header-back" id="sign-back-btn" onclick="goUserList()">← 이전</button>
+    <div class="header-title" id="sign-event-title">서명</div>
+    <div class="header-right"></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">📝 참가자 정보 입력</div>
+      <div class="form-group">
+        <label class="form-label">소속 <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="u-dept" class="form-input" placeholder="예: OO초등학교">
+      </div>
+      <div class="form-group">
+        <label class="form-label">직위 <span style="color:var(--danger)">*</span></label>
+        <select id="u-pos" class="form-select">
+          <option value="">직위 선택</option>
+          <option>교장</option><option>교감</option><option>행정실장</option>
+          <option>교사</option><option>주무관</option><option>영양사</option>
+          <option>조리사</option><option>학부모</option><option>기타</option>
+        </select>
+      </div>
+      <div class="form-group autocomplete-wrap">
+        <label class="form-label">성명 <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="u-name" class="form-input" placeholder="성명을 입력하세요" autocomplete="off">
+        <div class="autocomplete-list" id="autocomplete-list" style="display:none"></div>
+      </div>
     </div>
-    <div class="admin-content">
-        <div class="card">
-            <div class="card-title">정보 입력</div>
-            <div style="position:relative; margin-bottom:12px;">
-                <input type="text" id="u-name" class="form-input" placeholder="성명을 입력하세요" autocomplete="off">
-                <div id="autocomplete-list" class="autocomplete-items"></div>
-            </div>
-            <div class="form-row">
-                <input type="text" id="u-dept" class="form-input" placeholder="소속">
-                <input type="text" id="u-pos" class="form-input" placeholder="직위">
-            </div>
+    <div class="card">
+      <div class="card-title">✍️ 서명</div>
+      <div class="canvas-wrap">
+        <canvas id="sig-canvas"></canvas>
+        <div class="canvas-hint" id="canvas-hint">
+          <span style="font-size:28px">✍️</span>
+          <span>이 곳에 서명하세요</span>
         </div>
-        <div class="card">
-            <div class="card-title">서명</div>
-            <div class="canvas-wrap"><canvas id="sig-canvas"></canvas></div>
-            <div style="display:flex; gap:10px">
-                <button class="btn-secondary" style="flex:1" onclick="clearCanvas()">다시 쓰기</button>
-                <button class="btn-primary" style="flex:2; margin-bottom:0" onclick="submitSignature()">서명 완료</button>
-            </div>
-        </div>
+      </div>
+      <div style="display:flex; gap:10px">
+        <button class="btn btn-secondary" style="flex:1" onclick="clearCanvas()">🔄 다시 쓰기</button>
+        <button class="btn btn-primary btn-lg" style="flex:2" id="submit-btn" onclick="submitSignature()">서명 완료 ✓</button>
+      </div>
     </div>
+  </div>
 </div>
 
-<!-- [화면] 관리자 패널 -->
+<!-- ==============================
+     [화면] 서명 완료
+============================== -->
+<div id="screen-done" class="screen">
+  <div class="done-card">
+    <div class="done-icon">🎉</div>
+    <div class="done-title">서명 완료!</div>
+    <div class="done-name" id="done-name"></div>
+    <div class="done-sub" id="done-sub">서명이 성공적으로 등록되었습니다.<br>참석해 주셔서 감사합니다.</div>
+    <button class="btn btn-primary btn-full btn-lg" onclick="goHome()">처음으로 돌아가기</button>
+  </div>
+</div>
+
+<!-- ==============================
+     [화면] 관리자 패널
+============================== -->
 <div id="screen-admin" class="screen">
-    <div class="admin-header">
-        <h2 style="font-size:18px">관리자 패널</h2>
-        <button onclick="goHome()" style="color:var(--red); border:none; background:none; font-weight:bold; cursor:pointer">로그아웃</button>
+  <div class="app-header" style="background:var(--g900); border-bottom-color:#2D4A35">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">🔒</span>
+      <span style="font-size:15px; font-weight:700; color:white">관리자 패널</span>
     </div>
-    <div class="admin-content">
-        <div style="display:flex; border-bottom:2px solid var(--g200); margin-bottom:20px">
-            <button id="tab-btn-1" class="admin-tab-btn active" onclick="switchTab(1)">행사 관리</button>
-            <button id="tab-btn-2" class="admin-tab-btn" onclick="switchTab(2)">명부 관리</button>
-            <button id="tab-btn-3" class="admin-tab-btn" onclick="switchTab(3)">동기화 설정</button>
-        </div>
-
-        <div id="tab-1" class="tab-panel active">
-            <div class="card">
-                <div class="card-title">새 행사 등록</div>
-                <div class="form-row">
-                    <select id="f-type" class="form-input">
-                        <option value="외부">외부 행사 (누구나 서명)</option>
-                        <option value="내부">내부 행사 (명부 자동완성)</option>
-                    </select>
-                    <input type="text" id="f-title" class="form-input" placeholder="행사 제목">
-                </div>
-                <div class="form-row">
-                    <input type="text" id="f-loc" class="form-input" placeholder="장소">
-                    <input type="date" id="f-date" class="form-input">
-                </div>
-                <button class="btn-primary" onclick="addEvent()">등록하기</button>
-            </div>
-            <div id="admin-event-list"></div>
-        </div>
-
-        <div id="tab-2" class="tab-panel" style="display:none">
-            <div class="card">
-                <div class="card-title">교직원 명부 (내부용)</div>
-                <textarea id="staff-raw" class="form-input" style="height:150px; margin-bottom:15px;" placeholder="성명, 소속, 직위 순으로 입력&#10;예: 홍길동, OO초, 교사"></textarea>
-                <button class="btn-primary" onclick="saveStaff()">명부 업데이트</button>
-                <div style="margin-top:10px; font-size:13px">현재 등록 인원: <span id="staff-count">0</span>명</div>
-            </div>
-        </div>
-
-        <div id="tab-3" class="tab-panel" style="display:none">
-            <div class="card">
-                <div class="card-title">구글 스프레드시트 연동</div>
-                <input type="text" id="gas-url" class="form-input" placeholder="구글 웹 앱 URL을 입력하세요" style="margin-bottom:10px">
-                <button class="btn-primary" onclick="testAndSaveGasUrl()">설정 저장 및 연결 테스트</button>
-                <div class="code-blk" id="gas-code-area" style="margin-top:20px">
-                    <div style="font-weight:bold; color:white; margin-bottom:10px">복사할 Apps Script 코드:</div>
-                    <span id="gas-code-text" style="font-family:monospace; font-size:11px"></span>
-                </div>
-            </div>
-        </div>
+    <div class="fb-status" id="fb-status-indicator">
+      <div class="fb-dot" id="fb-dot"></div>
+      <span id="fb-status-text">연결 중…</span>
     </div>
+    <button onclick="adminLogout()" style="background:none;border:none;color:#F87171;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:14px">로그아웃</button>
+  </div>
+  <div class="content" style="padding-top:16px">
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-btn-1" onclick="switchTab(1)">📋 행사 관리</button>
+      <button class="tab-btn" id="tab-btn-2" onclick="switchTab(2)">👥 명부 관리</button>
+      <button class="tab-btn" id="tab-btn-3" onclick="switchTab(3)">⚙️ 설정</button>
+    </div>
+
+    <!-- 탭1: 행사 관리 -->
+    <div id="tab-1">
+      <div class="card">
+        <div class="card-title">새 행사(연수) 등록</div>
+        <div class="form-group">
+          <label class="form-label">행사 제목 <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="f-title" class="form-input" placeholder="예: 2025년 1학기 전문적학습공동체">
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">날짜</label>
+            <input type="date" id="f-date" class="form-input">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">장소</label>
+            <input type="text" id="f-loc" class="form-input" placeholder="예: 도서관">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">참가 유형</label>
+          <select id="f-type" class="form-select">
+            <option value="외부">외부 참가자 (누구나)</option>
+            <option value="내부">내부 교직원 (명부 자동완성)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-top:4px" onclick="addEvent()">✅ 행사 등록하기</button>
+      </div>
+      <div id="admin-event-list"></div>
+    </div>
+
+    <!-- 탭2: 명부 관리 -->
+    <div id="tab-2" style="display:none">
+      <div class="card">
+        <div class="card-title">교직원 명부 등록</div>
+        <div class="info-box">
+          💡 내부 행사 서명 시 성명 자동완성에 활용됩니다.<br>
+          한 줄에 한 명씩 <strong>성명, 소속, 직위</strong> 순으로 입력하세요.
+        </div>
+        <div class="form-group">
+          <label class="form-label">교직원 명부 (성명, 소속, 직위)</label>
+          <textarea id="staff-raw" class="form-textarea" style="min-height:160px"
+            placeholder="예시:&#10;홍길동, OO초등학교, 교장&#10;김철수, OO초등학교, 교감&#10;이영희, OO초등학교, 교사"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveStaff()">💾 명부 저장</button>
+        <div style="margin-top:12px; font-size:13px; color:var(--g500); display:flex; align-items:center; gap:6px">
+          <span>👥</span>
+          <span>현재 등록 인원: <strong id="staff-count" style="color:var(--primary)">0</strong>명</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭3: 설정 -->
+    <div id="tab-3" style="display:none">
+      <div class="card">
+        <div class="card-title">🔥 Firebase 연동 설정</div>
+        <div class="warn-box">
+          ⚠️ <strong>중요:</strong> Firebase를 연결해야 여러 사람이 동시에 QR 서명할 수 있습니다.<br>
+          연결 전에는 데이터가 이 기기에만 저장됩니다.
+        </div>
+        <div id="fb-connected-status"></div>
+
+        <details style="margin-top:12px">
+          <summary style="cursor:pointer; font-weight:700; font-size:14px; color:var(--primary); padding:8px 0">
+            📖 Firebase 설정 방법 (초보자용 안내) 펼치기
+          </summary>
+          <div style="margin-top:12px">
+            <div class="step-box">
+              <div class="step-row"><span class="step-num">1</span><span><strong>firebase.google.com</strong> 접속 → Google 계정으로 로그인</span></div>
+            </div>
+            <div class="step-box">
+              <div class="step-row"><span class="step-num">2</span><span>프로젝트 추가 → 프로젝트 이름 입력 (예: school-sign)</span></div>
+            </div>
+            <div class="step-box">
+              <div class="step-row"><span class="step-num">3</span><span>빌드 → Firestore Database → 데이터베이스 만들기 → <strong>테스트 모드</strong> 선택</span></div>
+            </div>
+            <div class="step-box">
+              <div class="step-row"><span class="step-num">4</span><span>프로젝트 설정(톱니바퀴) → 내 앱 → 웹 앱 추가(&lt;/&gt;) → 앱 이름 입력 후 등록</span></div>
+            </div>
+            <div class="step-box">
+              <div class="step-row"><span class="step-num">5</span><span>나타나는 <strong>firebaseConfig</strong> 값들을 아래에 붙여넣으세요</span></div>
+            </div>
+          </div>
+        </details>
+
+        <div style="margin-top:16px">
+          <div class="form-group">
+            <label class="form-label">API Key</label>
+            <input type="text" id="fb-apiKey" class="form-input" placeholder="AIzaSy…">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Auth Domain</label>
+            <input type="text" id="fb-authDomain" class="form-input" placeholder="your-project.firebaseapp.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Project ID</label>
+            <input type="text" id="fb-projectId" class="form-input" placeholder="your-project-id">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Storage Bucket</label>
+            <input type="text" id="fb-storageBucket" class="form-input" placeholder="your-project.appspot.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Messaging Sender ID</label>
+            <input type="text" id="fb-messagingSenderId" class="form-input" placeholder="숫자">
+          </div>
+          <div class="form-group">
+            <label class="form-label">App ID</label>
+            <input type="text" id="fb-appId" class="form-input" placeholder="1:…">
+          </div>
+          <button class="btn btn-primary btn-full" onclick="saveFirebaseConfig()">🔌 Firebase 연결하기</button>
+          <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="clearFirebaseConfig()">연결 해제</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔑 관리자 비밀번호 변경</div>
+        <div class="form-group">
+          <label class="form-label">현재 비밀번호</label>
+          <input type="password" id="pw-old" class="form-input" placeholder="현재 비밀번호">
+        </div>
+        <div class="form-group">
+          <label class="form-label">새 비밀번호</label>
+          <input type="password" id="pw-new" class="form-input" placeholder="새 비밀번호 (4자 이상)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">새 비밀번호 확인</label>
+          <input type="password" id="pw-new2" class="form-input" placeholder="새 비밀번호 다시 입력">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="changePw()">비밀번호 변경</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📤 데이터 관리</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="exportData()">📥 데이터 내보내기</button>
+          <button class="btn btn-danger" onclick="clearAllData()">🗑️ 전체 초기화</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- 인쇄용 -->
-<div id="pdf-area">
-    <div style="padding:40px; background:white;">
-        <h1 id="print-title" style="text-align:center; font-size:24px; margin-bottom:20px;">등록부</h1>
-        <table style="width:100%; border-collapse:collapse; border:2px solid black;">
-            <thead>
-                <tr>
-                    <th style="border:1px solid black; padding:10px; width:50px">No</th>
-                    <th style="border:1px solid black; padding:10px; width:150px">소속</th>
-                    <th style="border:1px solid black; padding:10px; width:100px">성명</th>
-                    <th style="border:1px solid black; padding:10px">서명</th>
-                </tr>
-            </thead>
-            <tbody id="print-tbody"></tbody>
-        </table>
+<!-- ==============================
+     모달들
+============================== -->
+<!-- 관리자 로그인 -->
+<div id="modal-login" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">🔐 관리자 인증</div>
+    <div class="info-box" style="margin-bottom:14px">처음 사용 시 기본 비밀번호는 <strong>1234</strong>입니다.<br>설정에서 반드시 변경해 주세요.</div>
+    <div class="form-group">
+      <label class="form-label">비밀번호</label>
+      <input type="password" id="admin-pw" class="form-input" placeholder="비밀번호 입력"
+        onkeydown="if(event.key==='Enter')checkLogin()">
     </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('modal-login')">취소</button>
+      <button class="btn btn-primary" onclick="checkLogin()">로그인</button>
+    </div>
+  </div>
 </div>
 
-<div id="qr-area-print">
-    <h1 id="qr-title" style="font-size:32px; margin-bottom:20px;">행사 제목</h1>
-    <div id="qr-gen" style="background:white; padding:20px; border:1px solid #ccc;"></div>
-    <p style="font-size:24px; font-weight:bold; margin-top:20px">스캔하여 서명하세요</p>
+<!-- 서명 상세보기 -->
+<div id="modal-sigs" class="modal-overlay">
+  <div class="modal" style="max-width:600px; width:100%">
+    <div class="modal-title">📋 <span id="modal-sigs-title"></span> 서명 현황</div>
+    <div id="modal-sigs-content"></div>
+    <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="printCurrentEvent()">🖨️ 인쇄</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-sigs')">닫기</button>
+    </div>
+  </div>
 </div>
 
-<script>
-    const state = {
-        events: JSON.parse(localStorage.getItem('ev_data_v2') || '[]'),
-        signatures: JSON.parse(localStorage.getItem('sig_data_v2') || '[]'),
-        staff: JSON.parse(localStorage.getItem('staff_data_v2') || '[]'),
-        gasUrl: localStorage.getItem('gas_url_v2') || '',
-        selectedEventId: null
-    };
+<!-- QR 코드 -->
+<div id="modal-qr" class="modal-overlay">
+  <div class="modal" style="text-align:center; max-width:340px">
+    <div class="modal-title" style="justify-content:center">📱 QR코드</div>
+    <div style="font-size:14px; color:var(--g500); margin-bottom:16px" id="modal-qr-title"></div>
+    <div style="display:flex; justify-content:center; margin-bottom:16px">
+      <div id="modal-qr-gen" style="padding:12px; border:2px solid var(--g200); border-radius:12px; background:white; display:inline-block"></div>
+    </div>
+    <div style="font-size:12px; color:var(--g400); word-break:break-all; margin-bottom:16px" id="modal-qr-url"></div>
+    <div style="display:flex; gap:10px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('modal-qr')">닫기</button>
+      <button class="btn btn-primary" style="flex:1" onclick="printQR()">🖨️ 인쇄</button>
+    </div>
+  </div>
+</div>
 
-    const $ = id => document.getElementById(id);
-    const toast = msg => {
-        const t = $('toast'); t.innerText = msg; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    };
+<!-- 서명 삭제 확인 -->
+<div id="modal-confirm" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">⚠️ 확인</div>
+    <div id="modal-confirm-msg" style="font-size:14px; color:var(--g700); line-height:1.7; margin-bottom:4px"></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('modal-confirm')">취소</button>
+      <button class="btn btn-danger" id="modal-confirm-ok">삭제</button>
+    </div>
+  </div>
+</div>
 
-    function show(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        $(id).classList.add('active');
+<script type="module">
+/* =========================================================
+   Firebase 동적 로드 + 앱 로직
+========================================================= */
+import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getFirestore, collection, doc, addDoc, setDoc, deleteDoc,
+  onSnapshot, query, orderBy, getDocs, deleteField
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+/* ─── 유틸 ─── */
+const $ = id => document.getElementById(id);
+const esc = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+
+let toastTimer;
+function toast(msg, dur = 2800) {
+  const t = $('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function showLoading(msg = '처리 중…') {
+  $('loading-text').textContent = msg;
+  $('loading').classList.add('active');
+}
+function hideLoading() { $('loading').classList.remove('active'); }
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function openModal(id) { $(id).classList.add('active'); }
+function closeModal(id) { $(id).classList.remove('active'); }
+window.closeModal = closeModal;
+
+document.querySelectorAll('.modal-overlay').forEach(el =>
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); })
+);
+
+/* ─── 직위 정렬 순서 ─── */
+const POS_ORDER = ['교장','교감','행정실장','교사','주무관','영양사','조리사','학부모','기타'];
+function posRank(pos) {
+  const i = POS_ORDER.indexOf(pos);
+  return i === -1 ? POS_ORDER.length : i;
+}
+function sortSigs(sigs) {
+  return [...sigs].sort((a, b) => {
+    const rd = posRank(a.pos) - posRank(b.pos);
+    if (rd !== 0) return rd;
+    return (a.name || '').localeCompare(b.name || '', 'ko');
+  });
+}
+
+/* ─── 상태 ─── */
+let db = null;
+let fbConfig = null;
+let unsubEvents = null, unsubSigs = null;
+
+const state = {
+  events: [],
+  signatures: [],
+  staff: JSON.parse(localStorage.getItem('staff_data') || '[]'),
+  adminPw: localStorage.getItem('admin_pw') || '1234',
+  selectedEventId: null,
+  currentPrintEventId: null,
+  currentQREventId: null,
+};
+
+/* ─── Firebase 초기화 ─── */
+function loadFbConfig() {
+  try {
+    const raw = localStorage.getItem('fb_config');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+async function initFirebase(config) {
+  try {
+    if (getApps().length > 0) {
+      // 이미 초기화된 앱이 있으면 재사용
+      db = getFirestore(getApps()[0]);
+    } else {
+      const app = initializeApp(config);
+      db = getFirestore(app);
     }
+    fbConfig = config;
+    setFbStatus('connected');
+    startFirebaseListeners();
+    return true;
+  } catch (e) {
+    setFbStatus('error');
+    console.error(e);
+    return false;
+  }
+}
 
-    function goHome() { 
-        window.history.replaceState({}, '', window.location.pathname);
-        show('screen-main'); 
+function setFbStatus(status) {
+  const dot = $('fb-dot'), text = $('fb-status-text');
+  if (!dot) return;
+  dot.className = 'fb-dot' + (status === 'connected' ? ' connected' : status === 'error' ? ' error' : '');
+  text.textContent = status === 'connected' ? '실시간 연동 중' : status === 'error' ? '연결 오류' : '미연결 (로컬 저장)';
+  text.style.color = status === 'connected' ? '#22A06B' : status === 'error' ? 'var(--danger)' : 'var(--g400)';
+}
+
+function startFirebaseListeners() {
+  if (!db) return;
+  if (unsubEvents) unsubEvents();
+  if (unsubSigs) unsubSigs();
+
+  unsubEvents = onSnapshot(query(collection(db, 'events'), orderBy('createdAt', 'desc')), snap => {
+    state.events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderAdminEvents();
+    renderUserEvents();
+  });
+
+  unsubSigs = onSnapshot(query(collection(db, 'signatures'), orderBy('time', 'desc')), snap => {
+    state.signatures = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderAdminEvents();
+  });
+}
+
+/* ─── 로컬 폴백 ─── */
+function saveLocal() {
+  if (db) return; // Firebase 사용 중이면 스킵
+  localStorage.setItem('events_local', JSON.stringify(state.events));
+  localStorage.setItem('sigs_local', JSON.stringify(state.signatures));
+}
+function loadLocal() {
+  if (db) return;
+  state.events = JSON.parse(localStorage.getItem('events_local') || '[]');
+  state.signatures = JSON.parse(localStorage.getItem('sigs_local') || '[]');
+}
+
+/* ─── 화면 이동 ─── */
+window.goHome = () => {
+  window.history.replaceState({}, '', window.location.pathname);
+  show('screen-main');
+};
+window.goUserList = () => {
+  show('screen-user-list');
+  renderUserEvents();
+};
+window.adminLogout = () => {
+  show('screen-main');
+  toast('로그아웃되었습니다');
+};
+
+/* ─── 사용자 행사 목록 ─── */
+function renderUserEvents() {
+  const cont = $('user-event-list');
+  const today = new Date().toISOString().split('T')[0];
+  if (!state.events.length) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">등록된 행사가 없습니다</div><div class="empty-desc">관리자에게 문의해 주세요</div></div>`;
+    return;
+  }
+  cont.innerHTML = state.events.map(ev => `
+    <div class="event-card-user" onclick="selectEvent('${ev.id}')">
+      <div class="event-card-icon">📋</div>
+      <div class="event-card-info">
+        <div class="event-card-title">${esc(ev.title)}</div>
+        <div class="event-card-meta">📅 ${ev.date || today} &nbsp;|&nbsp; 📍 ${esc(ev.loc || '교내')} &nbsp;|&nbsp; <span class="badge ${ev.type==='내부'?'badge-green':'badge-blue'}">${ev.type || '외부'}</span></div>
+      </div>
+      <div class="event-card-arrow">›</div>
+    </div>
+  `).join('');
+}
+
+/* ─── 행사 선택 (서명 화면으로) ─── */
+window.selectEvent = id => {
+  state.selectedEventId = id;
+  const ev = state.events.find(e => e.id === id);
+  if (!ev) { toast('행사를 찾을 수 없습니다'); return; }
+  $('sign-event-title').textContent = ev.title;
+  $('u-name').value = '';
+  $('u-dept').value = '';
+  $('u-pos').value = '';
+  show('screen-sign');
+  initCanvas();
+  setupAutocomplete(ev.type === '내부');
+};
+
+/* ─── 자동완성 ─── */
+function setupAutocomplete(isInternal) {
+  const input = $('u-name');
+  const list = $('autocomplete-list');
+  input.oninput = () => {
+    const val = input.value.trim();
+    list.style.display = 'none';
+    list.innerHTML = '';
+    if (!val || !isInternal || !state.staff.length) return;
+    const matches = state.staff.filter(s => s.name && s.name.includes(val)).slice(0, 6);
+    if (!matches.length) return;
+    list.innerHTML = matches.map(m => `
+      <div class="autocomplete-item" onclick="fillStaff('${esc(m.name)}','${esc(m.dept)}','${esc(m.pos)}')">
+        <div><span class="ac-name">${esc(m.name)}</span></div>
+        <div><span class="ac-dept">${esc(m.dept)} · ${esc(m.pos)}</span></div>
+      </div>
+    `).join('');
+    list.style.display = 'block';
+  };
+  document.addEventListener('click', e => {
+    if (e.target !== input) list.style.display = 'none';
+  });
+}
+window.fillStaff = (name, dept, pos) => {
+  $('u-name').value = name;
+  $('u-dept').value = dept;
+  const sel = $('u-pos');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === pos) { sel.selectedIndex = i; break; }
+  }
+  $('autocomplete-list').style.display = 'none';
+};
+
+/* ─── 서명 캔버스 ─── */
+let canvas, ctx, drawing = false, hasSig = false;
+function initCanvas() {
+  canvas = $('sig-canvas');
+  ctx = canvas.getContext('2d');
+  const ratio = window.devicePixelRatio || 1;
+  const w = canvas.offsetWidth || 320;
+  const h = canvas.offsetHeight || 200;
+  canvas.width = w * ratio;
+  canvas.height = h * ratio;
+  ctx.scale(ratio, ratio);
+  ctx.strokeStyle = '#1a1a2e';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  hasSig = false;
+  $('canvas-hint').classList.remove('hidden');
+
+  const getPos = e => {
+    const rect = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  };
+  const startDraw = e => {
+    drawing = true; hasSig = true;
+    $('canvas-hint').classList.add('hidden');
+    const p = getPos(e);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  };
+  const moveDraw = e => {
+    if (!drawing) return;
+    if (e.cancelable) e.preventDefault();
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  };
+  const endDraw = () => { drawing = false; };
+
+  canvas.onmousedown = startDraw;
+  canvas.onmousemove = moveDraw;
+  canvas.onmouseup = endDraw;
+  canvas.ontouchstart = startDraw;
+  canvas.ontouchmove = moveDraw;
+  canvas.ontouchend = endDraw;
+}
+window.clearCanvas = () => {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSig = false;
+  $('canvas-hint').classList.remove('hidden');
+};
+
+/* ─── 서명 제출 ─── */
+window.submitSignature = async () => {
+  const name = $('u-name').value.trim();
+  const dept = $('u-dept').value.trim();
+  const pos = $('u-pos').value;
+  if (!name) { toast('⚠️ 성명을 입력해 주세요'); $('u-name').focus(); return; }
+  if (!dept) { toast('⚠️ 소속을 입력해 주세요'); $('u-dept').focus(); return; }
+  if (!pos) { toast('⚠️ 직위를 선택해 주세요'); return; }
+  if (!hasSig) { toast('⚠️ 서명란에 서명해 주세요'); return; }
+
+  const btn = $('submit-btn');
+  btn.textContent = '등록 중…'; btn.disabled = true;
+
+  const sigData = {
+    eventId: state.selectedEventId,
+    name, dept, pos,
+    img: canvas.toDataURL('image/png'),
+    time: new Date().toISOString()
+  };
+
+  try {
+    if (db) {
+      await addDoc(collection(db, 'signatures'), sigData);
+    } else {
+      sigData.id = 'sig_' + Date.now();
+      state.signatures.push(sigData);
+      saveLocal();
     }
+    $('done-name').textContent = `${name}님`;
+    const ev = state.events.find(e => e.id === state.selectedEventId);
+    $('done-sub').textContent = `"${ev?.title || ''}" 서명이 성공적으로 등록되었습니다.\n참석해 주셔서 감사합니다.`;
+    show('screen-done');
+  } catch (e) {
+    toast('오류가 발생했습니다: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.textContent = '서명 완료 ✓'; btn.disabled = false;
+  }
+};
 
-    function openModal(id) { $(id).classList.add('active'); }
-    function closeModal(id) { $(id).classList.remove('active'); }
+/* ─── 관리자 로그인 ─── */
+window.checkLogin = () => {
+  if ($('admin-pw').value === state.adminPw) {
+    closeModal('modal-login');
+    $('admin-pw').value = '';
+    show('screen-admin');
+    renderAdminEvents();
+    updateStaffUI();
+    loadFbConfigUI();
+    renderFbConnectedStatus();
+    if (!db) { setFbStatus('none'); loadLocal(); renderAdminEvents(); }
+  } else {
+    toast('❌ 비밀번호가 틀렸습니다');
+    $('admin-pw').value = '';
+  }
+};
+window.openModal = openModal;
 
-    // --- 동기화 테스트 및 저장 ---
-    async function testAndSaveGasUrl() {
-        const url = $('gas-url').value.trim();
-        if (!url) return toast("URL을 입력하세요.");
-        
-        $('loading-text').innerText = "연결 테스트 중...";
-        $('loading').style.display = 'flex';
+/* ─── 탭 전환 ─── */
+window.switchTab = idx => {
+  [1,2,3].forEach(i => {
+    $(`tab-btn-${i}`).classList.toggle('active', i === idx);
+    $(`tab-${i}`).style.display = i === idx ? 'block' : 'none';
+  });
+};
 
-        try {
-            // GET 요청으로 연결 가능성 확인 (doGet이 구현되어 있어야 함)
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
-            await fetch(url, { method: 'GET', mode: 'no-cors', signal: controller.signal });
-            
-            state.gasUrl = url;
-            localStorage.setItem('gas_url_v2', url);
-            toast("✅ 동기화 성공! 설정이 저장되었습니다.");
-        } catch (e) {
-            toast("⚠️ 응답을 확인하지 못했습니다. 배포 설정을 확인하세요.");
-            // 실패하더라도 URL은 저장 (no-cors 특성 때문)
-            state.gasUrl = url;
-            localStorage.setItem('gas_url_v2', url);
-        } finally {
-            $('loading').style.display = 'none';
-        }
+/* ─── 행사 등록 ─── */
+window.addEvent = async () => {
+  const title = $('f-title').value.trim();
+  if (!title) { toast('⚠️ 행사 제목을 입력해 주세요'); return; }
+  const ev = {
+    title,
+    date: $('f-date').value || new Date().toISOString().split('T')[0],
+    loc: $('f-loc').value.trim() || '교내',
+    type: $('f-type').value,
+    createdAt: Date.now()
+  };
+  showLoading('행사 등록 중…');
+  try {
+    if (db) {
+      await addDoc(collection(db, 'events'), ev);
+    } else {
+      ev.id = 'ev_' + Date.now();
+      state.events.unshift(ev);
+      saveLocal(); renderAdminEvents();
     }
+    $('f-title').value = ''; $('f-loc').value = '';
+    toast('✅ 행사가 등록되었습니다');
+  } catch(e) { toast('오류: ' + e.message); }
+  finally { hideLoading(); }
+};
 
-    function checkLogin() {
-        if ($('admin-pw').value === '1234') {
-            closeModal('modal-login'); show('screen-admin'); renderAdminEvents(); updateStaffCount();
-        } else toast('비밀번호가 틀렸습니다.');
-    }
-
-    function switchTab(idx) {
-        document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
-        $(`tab-btn-${idx}`).classList.add('active');
-        $(`tab-${idx}`).style.display = 'block';
-        if(idx === 3) renderGasCode();
-    }
-
-    function addEvent() {
-        const title = $('f-title').value.trim();
-        if (!title) return toast('제목을 입력하세요.');
-        const newEv = {
-            id: 'ev_' + Date.now(), title, type: $('f-type').value,
-            loc: $('f-loc').value || '교내', date: $('f-date').value || new Date().toISOString().split('T')[0]
-        };
-        state.events.unshift(newEv); saveData(); renderAdminEvents();
-        $('f-title').value = ''; toast('행사가 등록되었습니다.');
-    }
-
-    function renderAdminEvents() {
-        const container = $('admin-event-list');
-        if (state.events.length === 0) { container.innerHTML = '<p style="text-align:center; padding:40px; color:#999">등록된 행사가 없습니다.</p>'; return; }
-        container.innerHTML = state.events.map(ev => {
-            const count = state.signatures.filter(s => s.eventId === ev.id).length;
-            return `
-                <div class="ev-item">
-                    <div>
-                        <span class="badge ${ev.type==='내부'?'badge-green':'badge-blue'}">${ev.type}</span>
-                        <strong style="font-size:15px">${ev.title}</strong>
-                        <div style="font-size:12px; color:#666; margin-top:4px">${ev.date} | 서명: ${count}명</div>
-                    </div>
-                    <div>
-                        <button onclick="showQR('${ev.id}')" style="padding:5px 10px; cursor:pointer">QR</button>
-                        <button onclick="printEvent('${ev.id}')" style="padding:5px 10px; cursor:pointer">인쇄</button>
-                        <button onclick="deleteEvent('${ev.id}')" style="padding:5px 10px; cursor:pointer; color:red">삭제</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function deleteEvent(id) {
-        if(!confirm('삭제하시겠습니까?')) return;
+/* ─── 행사 삭제 ─── */
+window.deleteEvent = id => {
+  const ev = state.events.find(e => e.id === id);
+  const cnt = state.signatures.filter(s => s.eventId === id).length;
+  $('modal-confirm-msg').innerHTML = `<strong>"${esc(ev?.title)}"</strong> 행사를 삭제하시겠습니까?<br><span style="color:var(--danger)">서명 ${cnt}건도 함께 삭제됩니다.</span>`;
+  $('modal-confirm-ok').onclick = async () => {
+    closeModal('modal-confirm');
+    showLoading('삭제 중…');
+    try {
+      if (db) {
+        await deleteDoc(doc(db, 'events', id));
+        const relSigs = state.signatures.filter(s => s.eventId === id);
+        for (const s of relSigs) await deleteDoc(doc(db, 'signatures', s.id));
+      } else {
         state.events = state.events.filter(e => e.id !== id);
         state.signatures = state.signatures.filter(s => s.eventId !== id);
-        saveData(); renderAdminEvents();
+        saveLocal(); renderAdminEvents();
+      }
+      toast('삭제되었습니다');
+    } catch(e) { toast('오류: ' + e.message); }
+    finally { hideLoading(); }
+  };
+  openModal('modal-confirm');
+};
+
+/* ─── 관리자 행사 목록 렌더 ─── */
+function renderAdminEvents() {
+  const cont = $('admin-event-list');
+  if (!state.events.length) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">등록된 행사가 없습니다</div><div class="empty-desc">위 폼에서 새 행사를 등록해 주세요</div></div>`;
+    return;
+  }
+  cont.innerHTML = state.events.map(ev => {
+    const sigs = state.signatures.filter(s => s.eventId === ev.id);
+    const sorted = sortSigs(sigs);
+    const previewNames = sorted.slice(0, 5).map(s =>
+      `<span class="sig-chip">${esc(s.pos ? s.pos[0] : '')} ${esc(s.name)}</span>`
+    ).join('');
+    return `
+      <div class="admin-event-item">
+        <div class="admin-event-top">
+          <div>
+            <span class="badge ${ev.type==='내부'?'badge-green':'badge-blue'}">${ev.type||'외부'}</span>
+            <div class="admin-event-title" style="margin-top:5px">${esc(ev.title)}</div>
+            <div class="admin-event-meta">📅 ${ev.date||''} &nbsp;·&nbsp; 📍 ${esc(ev.loc||'')}</div>
+          </div>
+        </div>
+        <div class="sig-status">
+          <span class="badge-count">✍️ ${sigs.length}명 서명</span>
+          ${previewNames}
+          ${sigs.length > 5 ? `<span style="font-size:12px;color:var(--g400)">외 ${sigs.length-5}명</span>` : ''}
+        </div>
+        <div class="admin-event-actions" style="margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="showQR('${ev.id}')">📱 QR</button>
+          <button class="btn btn-blue btn-sm" onclick="showSigs('${ev.id}')">👁️ 서명 확인</button>
+          <button class="btn btn-secondary btn-sm" onclick="printEvent('${ev.id}')">🖨️ 인쇄</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">🗑️ 삭제</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ─── QR 코드 ─── */
+window.showQR = id => {
+  state.currentQREventId = id;
+  const ev = state.events.find(e => e.id === id);
+  const url = `${location.origin}${location.pathname}?ev=${id}`;
+  $('modal-qr-title').textContent = ev?.title || '';
+  $('modal-qr-url').textContent = url;
+  $('modal-qr-gen').innerHTML = '';
+  new QRCode($('modal-qr-gen'), { text: url, width: 220, height: 220, colorDark: '#1B6B3A' });
+  openModal('modal-qr');
+};
+window.printQR = () => {
+  const id = state.currentQREventId;
+  const ev = state.events.find(e => e.id === id);
+  const url = `${location.origin}${location.pathname}?ev=${id}`;
+  $('qr-print-title').textContent = ev?.title || '';
+  $('qr-print-sub').textContent = `${ev?.date || ''} · ${ev?.loc || ''}`;
+  $('qr-print-url').textContent = url;
+  $('qr-gen-print').innerHTML = '';
+  new QRCode($('qr-gen-print'), { text: url, width: 280, height: 280, colorDark: '#1B6B3A' });
+  closeModal('modal-qr');
+  setTimeout(() => {
+    $('print-area').style.display = 'none';
+    $('qr-print-area').style.display = 'block';
+    window.print();
+    setTimeout(() => { $('qr-print-area').style.display = 'none'; }, 1000);
+  }, 500);
+};
+
+/* ─── 서명 상세보기 ─── */
+window.showSigs = id => {
+  state.currentPrintEventId = id;
+  const ev = state.events.find(e => e.id === id);
+  const sigs = sortSigs(state.signatures.filter(s => s.eventId === id));
+  $('modal-sigs-title').textContent = ev?.title || '';
+  if (!sigs.length) {
+    $('modal-sigs-content').innerHTML = `<div class="empty-state" style="padding:30px"><div class="empty-icon" style="font-size:36px">✍️</div><div>아직 서명이 없습니다</div></div>`;
+  } else {
+    $('modal-sigs-content').innerHTML = `
+      <div class="sig-table-wrap">
+        <table class="sig-table">
+          <thead><tr><th>#</th><th>직위</th><th>소속</th><th>성명</th><th>서명</th><th>시간</th></tr></thead>
+          <tbody>${sigs.map((s, i) => `
+            <tr>
+              <td>${i+1}</td>
+              <td><strong>${esc(s.pos)}</strong></td>
+              <td>${esc(s.dept)}</td>
+              <td class="name">${esc(s.name)}</td>
+              <td>${s.img ? `<img src="${s.img}" alt="서명">` : '-'}</td>
+              <td style="font-size:11px;color:var(--g400)">${s.time ? new Date(s.time).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : ''}</td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--g500)">직위 순서대로 정렬: 교장 → 교감 → 행정실장 → 교사 → 주무관 → 영양사 → 조리사 → 학부모 → 기타</div>
+    `;
+  }
+  openModal('modal-sigs');
+};
+
+/* ─── 인쇄 ─── */
+window.printCurrentEvent = () => {
+  closeModal('modal-sigs');
+  printEvent(state.currentPrintEventId);
+};
+window.printEvent = id => {
+  state.currentPrintEventId = id;
+  const ev = state.events.find(e => e.id === id);
+  const sigs = sortSigs(state.signatures.filter(s => s.eventId === id));
+  $('print-event-title').textContent = `${ev?.title || ''} 등록부`;
+  $('print-event-meta').textContent = `일시: ${ev?.date || ''} · 장소: ${ev?.loc || ''} · 서명: ${sigs.length}명`;
+  const rows = Math.max(sigs.length, 20);
+  $('print-tbody').innerHTML = Array.from({ length: rows }).map((_, i) => {
+    const s = sigs[i];
+    if (s) {
+      return `<tr>
+        <td>${i+1}</td>
+        <td>${esc(s.pos)}</td>
+        <td>${esc(s.dept)}</td>
+        <td class="name">${esc(s.name)}</td>
+        <td class="sig">${s.img ? `<img src="${s.img}" alt="서명">` : ''}</td>
+      </tr>`;
     }
+    return `<tr class="empty"><td>${i+1}</td><td></td><td></td><td></td><td></td></tr>`;
+  }).join('');
+  $('qr-print-area').style.display = 'none';
+  $('print-area').style.display = 'block';
+  window.print();
+  setTimeout(() => { $('print-area').style.display = 'none'; }, 1000);
+};
 
-    function saveStaff() {
-        const raw = $('staff-raw').value.trim();
-        if (!raw) return toast('데이터를 입력하세요.');
-        state.staff = raw.split('\n').map(line => {
-            const parts = line.split(',').map(p => p.trim());
-            return { name: parts[0], dept: parts[1] || '', pos: parts[2] || '' };
-        }).filter(p => p.name);
-        localStorage.setItem('staff_data_v2', JSON.stringify(state.staff));
-        updateStaffCount(); toast('명부 저장 완료');
+/* ─── 명부 관리 ─── */
+window.saveStaff = () => {
+  const raw = $('staff-raw').value.trim();
+  if (!raw) { toast('명부를 입력해 주세요'); return; }
+  state.staff = raw.split('\n').map(line => {
+    const p = line.split(',').map(s => s.trim());
+    return { name: p[0] || '', dept: p[1] || '', pos: p[2] || '' };
+  }).filter(p => p.name);
+  localStorage.setItem('staff_data', JSON.stringify(state.staff));
+  updateStaffUI(); toast(`✅ ${state.staff.length}명 저장 완료`);
+};
+function updateStaffUI() {
+  $('staff-count').textContent = state.staff.length;
+  if (state.staff.length > 0) {
+    $('staff-raw').value = state.staff.map(s => `${s.name}, ${s.dept}, ${s.pos}`).join('\n');
+  }
+}
+
+/* ─── Firebase 설정 저장 ─── */
+function loadFbConfigUI() {
+  const cfg = loadFbConfig();
+  if (!cfg) return;
+  $('fb-apiKey').value = cfg.apiKey || '';
+  $('fb-authDomain').value = cfg.authDomain || '';
+  $('fb-projectId').value = cfg.projectId || '';
+  $('fb-storageBucket').value = cfg.storageBucket || '';
+  $('fb-messagingSenderId').value = cfg.messagingSenderId || '';
+  $('fb-appId').value = cfg.appId || '';
+}
+
+function renderFbConnectedStatus() {
+  const cont = $('fb-connected-status');
+  if (db && fbConfig) {
+    cont.innerHTML = `<div class="connected-badge"><div class="dot-pulse"></div>Firebase 연결됨: ${esc(fbConfig.projectId)}</div>`;
+  } else {
+    cont.innerHTML = `<div style="color:var(--g400);font-size:13px;padding:6px 0">⚠️ Firebase 미연결 — 데이터가 이 기기에만 저장됩니다</div>`;
+  }
+}
+
+window.saveFirebaseConfig = async () => {
+  const cfg = {
+    apiKey: $('fb-apiKey').value.trim(),
+    authDomain: $('fb-authDomain').value.trim(),
+    projectId: $('fb-projectId').value.trim(),
+    storageBucket: $('fb-storageBucket').value.trim(),
+    messagingSenderId: $('fb-messagingSenderId').value.trim(),
+    appId: $('fb-appId').value.trim(),
+  };
+  if (!cfg.apiKey || !cfg.projectId) { toast('⚠️ API Key와 Project ID는 필수입니다'); return; }
+  showLoading('Firebase 연결 중…');
+  const ok = await initFirebase(cfg);
+  if (ok) {
+    localStorage.setItem('fb_config', JSON.stringify(cfg));
+    toast('✅ Firebase 연결 성공!');
+    renderFbConnectedStatus();
+  } else {
+    toast('❌ 연결 실패. 설정값을 확인해 주세요.');
+  }
+  hideLoading();
+};
+
+window.clearFirebaseConfig = () => {
+  if (!confirm('Firebase 연결을 해제하시겠습니까?\n이후 데이터는 이 기기에만 저장됩니다.')) return;
+  localStorage.removeItem('fb_config');
+  db = null; fbConfig = null;
+  if (unsubEvents) { unsubEvents(); unsubEvents = null; }
+  if (unsubSigs) { unsubSigs(); unsubSigs = null; }
+  setFbStatus('none');
+  renderFbConnectedStatus();
+  toast('연결이 해제되었습니다');
+};
+
+/* ─── 비밀번호 변경 ─── */
+window.changePw = () => {
+  const old = $('pw-old').value;
+  const nw = $('pw-new').value;
+  const nw2 = $('pw-new2').value;
+  if (old !== state.adminPw) { toast('❌ 현재 비밀번호가 틀렸습니다'); return; }
+  if (!nw || nw.length < 4) { toast('⚠️ 새 비밀번호는 4자 이상이어야 합니다'); return; }
+  if (nw !== nw2) { toast('⚠️ 비밀번호가 일치하지 않습니다'); return; }
+  state.adminPw = nw;
+  localStorage.setItem('admin_pw', nw);
+  $('pw-old').value = ''; $('pw-new').value = ''; $('pw-new2').value = '';
+  toast('✅ 비밀번호가 변경되었습니다');
+};
+
+/* ─── 데이터 내보내기 ─── */
+window.exportData = () => {
+  const data = { events: state.events, signatures: state.signatures, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sign_data_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+};
+
+window.clearAllData = async () => {
+  if (!confirm('⚠️ 모든 행사와 서명 데이터가 삭제됩니다.\n정말 초기화하시겠습니까?')) return;
+  if (!confirm('마지막 확인입니다. 정말 삭제하시겠습니까?')) return;
+  showLoading('초기화 중…');
+  try {
+    if (db) {
+      for (const ev of state.events) await deleteDoc(doc(db, 'events', ev.id));
+      for (const s of state.signatures) await deleteDoc(doc(db, 'signatures', s.id));
+    } else {
+      state.events = []; state.signatures = []; saveLocal();
+      renderAdminEvents();
     }
+    toast('초기화 완료');
+  } catch(e) { toast('오류: ' + e.message); }
+  finally { hideLoading(); }
+};
 
-    function updateStaffCount() {
-        $('staff-count').innerText = state.staff.length;
-        if(state.staff.length > 0) $('staff-raw').value = state.staff.map(s => `${s.name}, ${s.dept}, ${s.pos}`).join('\n');
-    }
+/* ─── URL 파라미터 처리 (QR 링크) ─── */
+async function handleUrlParams() {
+  const params = new URLSearchParams(location.search);
+  const evId = params.get('ev');
+  if (!evId) return;
+  // Firebase 연결 기다리기
+  let waited = 0;
+  while (!state.events.length && waited < 3000) {
+    await new Promise(r => setTimeout(r, 200));
+    waited += 200;
+  }
+  const ev = state.events.find(e => e.id === evId);
+  if (ev) {
+    selectEvent(evId);
+  } else {
+    toast('⚠️ 해당 행사를 찾을 수 없습니다');
+    show('screen-user-list');
+    renderUserEvents();
+  }
+}
 
-    function showUserFlow() {
-        show('screen-user-list');
-        const container = $('user-event-list');
-        if (state.events.length === 0) { container.innerHTML = '<p style="text-align:center; padding:50px; color:#999">현재 진행 중인 행사가 없습니다.</p>'; return; }
-        container.innerHTML = state.events.map(ev => `
-            <div class="card" onclick="selectEvent('${ev.id}')" style="cursor:pointer; border-left:6px solid ${ev.type==='내부'?'var(--accent)':'var(--blue)'}">
-                <div style="font-size:12px; color:#666; margin-bottom:5px">[${ev.type}]</div>
-                <h3 style="margin-bottom:5px">${ev.title}</h3>
-                <div style="font-size:13px">${ev.date} | ${ev.loc}</div>
-            </div>
-        `).join('');
-    }
+/* ─── 초기화 ─── */
+async function init() {
+  hideLoading();
+  const cfg = loadFbConfig();
+  if (cfg && cfg.apiKey) {
+    showLoading('Firebase 연결 중…');
+    await initFirebase(cfg);
+    hideLoading();
+  } else {
+    loadLocal();
+  }
+  updateStaffUI();
+  await handleUrlParams();
+}
 
-    function selectEvent(id) {
-        state.selectedEventId = id;
-        const ev = state.events.find(e => e.id === id);
-        if(!ev) { toast("행사를 찾을 수 없습니다."); return goHome(); }
-        $('sign-event-title').innerText = ev.title;
-        show('screen-sign');
-        initCanvas();
-        setupAutocomplete(ev.type === '내부');
-    }
-
-    function setupAutocomplete(isInternal) {
-        const input = $('u-name'); const list = $('autocomplete-list');
-        input.oninput = function() {
-            const val = this.value; list.innerHTML = '';
-            if (!val || !isInternal) return;
-            state.staff.filter(s => s.name.includes(val)).slice(0, 5).forEach(match => {
-                const div = document.createElement('div');
-                div.innerHTML = `<b>${match.name}</b> (${match.dept})`;
-                div.onclick = () => { 
-                    input.value = match.name; 
-                    $('u-dept').value = match.dept; 
-                    $('u-pos').value = match.pos; 
-                    list.innerHTML = ''; 
-                };
-                list.appendChild(div);
-            });
-        };
-        document.addEventListener('click', (e) => { if (e.target !== input) list.innerHTML = ''; });
-    }
-
-    let canvas, ctx, drawing = false;
-    function initCanvas() {
-        canvas = $('sig-canvas'); ctx = canvas.getContext('2d');
-        const ratio = window.devicePixelRatio || 1;
-        canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
-        ctx.scale(ratio, ratio); ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-        const getPos = e => {
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clientX - rect.left, y: clientY - rect.top };
-        };
-        canvas.onmousedown = e => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-        canvas.onmousemove = e => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-        window.onmouseup = () => drawing = false;
-        canvas.ontouchstart = e => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-        canvas.ontouchmove = e => { if(!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-    }
-
-    function clearCanvas() { ctx.clearRect(0,0,canvas.width, canvas.height); }
-
-    async function submitSignature() {
-        const name = $('u-name').value.trim(); const dept = $('u-dept').value.trim(); const pos = $('u-pos').value.trim();
-        if(!name || !dept) return toast('성명과 소속을 입력하세요.');
-        
-        $('loading-text').innerText = "데이터 전송 중...";
-        $('loading').style.display = 'flex';
-        
-        const sig = { eventId: state.selectedEventId, name, dept, pos, img: canvas.toDataURL('image/png'), time: new Date().toISOString() };
-        state.signatures.push(sig); saveData();
-
-        if (state.gasUrl) {
-            try { await fetch(state.gasUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(sig) }); } catch(e) {}
-        }
-        
-        setTimeout(() => {
-            $('loading').style.display = 'none'; toast('서명이 완료되었습니다.');
-            $('u-name').value=''; $('u-dept').value=''; $('u-pos').value='';
-            goHome();
-        }, 1000);
-    }
-
-    function showQR(id) {
-        const ev = state.events.find(e => e.id === id);
-        const url = `${window.location.origin}${window.location.pathname}?target=${id}`;
-        $('qr-title').innerText = ev.title;
-        $('qr-gen').innerHTML = '';
-        new QRCode($('qr-gen'), { text: url, width: 260, height: 260 });
-        setTimeout(() => window.print(), 500);
-    }
-
-    function printEvent(id) {
-        const ev = state.events.find(e => e.id === id);
-        const sigs = state.signatures.filter(s => s.eventId === id);
-        $('print-title').innerText = `${ev.title} 등록부 (${ev.date})`;
-        $('print-tbody').innerHTML = Array.from({length: Math.max(sigs.length, 15)}).map((_, i) => {
-            const s = sigs[i] || { dept:'', name:'', img:'' };
-            return `<tr><td style="border:1px solid black; height:50px; text-align:center">${i+1}</td>
-            <td style="border:1px solid black; padding:10px">${s.dept}</td>
-            <td style="border:1px solid black; padding:10px; text-align:center">${s.name}</td>
-            <td style="border:1px solid black; text-align:center">${s.img?`<img src="${s.img}" style="height:40px">`:''}</td></tr>`;
-        }).join('');
-        window.print();
-    }
-
-    function renderGasCode() {
-        $('gas-code-text').innerText = `function doGet() {\n  return ContentService.createTextOutput("Connected");\n}\n\nfunction doPost(e) {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sheet = ss.getActiveSheet();\n  var data = JSON.parse(e.postData.contents);\n  if (sheet.getLastRow() === 0) {\n    sheet.appendRow(["일시", "행사ID", "소속", "직위", "성명", "이미지데이터"]);\n  }\n  sheet.appendRow([new Date().toLocaleString('ko-KR'), data.eventId, data.dept, data.pos, data.name, data.img]);\n  return ContentService.createTextOutput("Success");\n}`;
-    }
-
-    function saveData() {
-        localStorage.setItem('ev_data_v2', JSON.stringify(state.events));
-        localStorage.setItem('sig_data_v2', JSON.stringify(state.signatures));
-    }
-
-    window.onload = () => {
-        const params = new URLSearchParams(window.location.search);
-        const targetId = params.get('target');
-        if (targetId) {
-            const ev = state.events.find(e => e.id === targetId);
-            if (ev) selectEvent(targetId);
-            else { toast("종료된 행사입니다."); goHome(); }
-        }
-        if (state.gasUrl) $('gas-url').value = state.gasUrl;
-    };
+init();
 </script>
 </body>
 </html>
